@@ -1,0 +1,24 @@
+include:
+  - dev.yml
+  - prod.yml
+
+networks:
+  caasm:
+    name: ${COMPOSE_PROJECT_NAME}
+
+volumes:
+  es:
+    name: ${COMPOSE_PROJECT_NAME}-es
+    driver: local
+  nebula-metad:
+    name: ${COMPOSE_PROJECT_NAME}-metad
+    driver: local
+  nebula-storaged:
+    name: ${COMPOSE_PROJECT_NAME}-storaged
+    driver: local
+  nebula-listener:
+    name: ${COMPOSE_PROJECT_NAME}-listener
+    driver: local
+  nebula-init:
+    name: ${COMPOSE_PROJECT_NAME}-init
+    driver: local

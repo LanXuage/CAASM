@@ -1,0 +1,2 @@
+USE caasm;
+SIGN IN TEXT SERVICE ("es":9200, HTTP);

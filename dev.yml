@@ -1,0 +1,130 @@
+services:
+  metad-dev:
+    extends:
+      file: base.yml
+      service: metad
+    container_name: ${COMPOSE_PROJECT_NAME}-metad-dev
+    ports:
+      - 9559:9559
+      - 19559:19559
+    profiles:
+      - dev
+
+  storaged-dev:
+    extends:
+      file: base.yml
+      service: storaged
+    container_name: ${COMPOSE_PROJECT_NAME}-storaged-dev
+    depends_on:
+      metad-dev:
+        condition: service_healthy
+    ports:
+      - 9779:9779
+      - 19779:19779
+    profiles:
+      - dev
+
+  listener-dev:
+    extends:
+      file: base.yml
+      service: listener
+    container_name: ${COMPOSE_PROJECT_NAME}-listener-dev
+    depends_on:
+      metad-dev:
+        condition: service_healthy
+    ports:
+      - 9789:9789
+      - 19789:19789
+    profiles:
+      - dev
+
+  graphd-dev:
+    extends:
+      file: base.yml
+      service: graphd
+    container_name: ${COMPOSE_PROJECT_NAME}-graphd-dev
+    depends_on:
+      storaged-dev:
+        condition: service_started
+    ports:
+      - 9669:9669
+      - 19669:19669
+    profiles:
+      - dev
+  
+  init-dev:
+    extends:
+      file: base.yml
+      service: init
+    container_name: ${COMPOSE_PROJECT_NAME}-init-dev
+    depends_on:
+      storaged-dev:
+        condition: service_started
+      graphd-dev:
+        condition: service_healthy
+      listener-dev:
+        condition: service_healthy
+      es-dev:
+        condition: service_healthy
+    profiles:
+      - dev
+
+  spark-dev:
+    extends:
+      file: base.yml
+      service: spark
+    container_name: ${COMPOSE_PROJECT_NAME}-spark-dev
+    hostname: spark
+    environment:
+      SPARK_MODE: master
+    ports:
+      - 7077:7077
+      - 8080:8080
+    profiles:
+      - dev
+    networks:
+      caasm:
+        aliases:
+          - spark
+
+  spark-worker-dev:
+    extends:
+      file: base.yml
+      service: spark
+    container_name: ${COMPOSE_PROJECT_NAME}-spark-worker-dev
+    hostname: sparkworker
+    depends_on:
+      spark-dev:
+        condition: service_healthy
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark:7077
+      SPARK_WORKER_MEMORY: ${SPARK_WORKER_MEMORY:-2G}
+      SPARK_WORKER_CORES: ${SPARK_WORKER_CORES:-2}
+    ports:
+      - 8081:8081
+    healthcheck:
+      test: 
+        - CMD
+        - timeout
+        - '5'
+        - bash
+        - -c
+        - echo >/dev/tcp/localhost/8081
+    profiles:
+      - dev
+    networks:
+      caasm:
+        aliases:
+          - sparkworker
+
+  es-dev:
+    extends:
+      file: base.yml
+      service: es
+    container_name: ${COMPOSE_PROJECT_NAME}-es-dev
+    ports:
+      - 9200:9200
+      - 9300:9300
+    profiles:
+      - dev

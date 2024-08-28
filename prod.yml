@@ -1,0 +1,110 @@
+services:
+  metad:
+    extends:
+      file: base.yml
+      service: metad
+    container_name: ${COMPOSE_PROJECT_NAME}-metad
+    profiles:
+      - prod
+
+  storaged:
+    extends:
+      file: base.yml
+      service: storaged
+    container_name: ${COMPOSE_PROJECT_NAME}-storaged
+    depends_on:
+      metad:
+        condition: service_healthy
+    profiles:
+      - prod
+
+  listener:
+    extends:
+      file: base.yml
+      service: listener
+    container_name: ${COMPOSE_PROJECT_NAME}-listener
+    depends_on:
+      metad:
+        condition: service_healthy
+    profiles:
+      - prod
+
+  graphd:
+    extends:
+      file: base.yml
+      service: graphd
+    container_name: ${COMPOSE_PROJECT_NAME}-graphd
+    depends_on:
+      storaged:
+        condition: service_started
+    profiles:
+      - prod
+
+  init:
+    extends:
+      file: base.yml
+      service: init
+    container_name: ${COMPOSE_PROJECT_NAME}-init
+    depends_on:
+      storaged:
+        condition: service_started
+      graphd:
+        condition: service_healthy
+      listener:
+        condition: service_healthy
+      es:
+        condition: service_healthy
+    profiles:
+      - prod
+
+  spark:
+    extends:
+      file: base.yml
+      service: spark
+    container_name: ${COMPOSE_PROJECT_NAME}-spark
+    hostname: spark
+    environment:
+      SPARK_MODE: master
+    profiles:
+      - prod
+    networks:
+      caasm:
+        aliases:
+          - spark
+
+  spark-worker:
+    extends:
+      file: base.yml
+      service: spark
+    container_name: ${COMPOSE_PROJECT_NAME}-spark-worker
+    hostname: sparkworker
+    depends_on:
+      spark:
+        condition: service_healthy
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark:7077
+      SPARK_WORKER_MEMORY: ${SPARK_WORKER_MEMORY:-2G}
+      SPARK_WORKER_CORES: ${SPARK_WORKER_CORES:-2}
+    healthcheck:
+      test: 
+        - CMD
+        - timeout
+        - '5'
+        - bash
+        - -c
+        - echo >/dev/tcp/localhost/8081
+    profiles:
+      - prod
+    networks:
+      caasm:
+        aliases:
+          - sparkworker
+
+  es:
+    extends:
+      file: base.yml
+      service: es
+    container_name: ${COMPOSE_PROJECT_NAME}-es
+    profiles:
+      - prod

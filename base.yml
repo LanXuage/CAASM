@@ -1,0 +1,276 @@
+services:
+  metad:
+    image: vesoft/nebula-metad:${NEBULA_VERSION:-v3.6.0}
+    hostname: metad
+    environment:
+      USER: ${NEBULA_USER:-root}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - nebula-metad:/data/meta:rw
+    deploy:
+      resources:
+        limits:
+          memory: ${NEBULA_METAD_MEMORY:-2048M}
+    command:
+      - --meta_server_addrs=metad:9559
+      - --local_ip=metad
+      - --ws_ip=metad
+      - --port=9559
+      - --ws_http_port=19559
+      - --data_path=/data/meta
+      - --logtostderr=true
+      - --redirect_stdout=false
+      - --v=0
+      - --minloglevel=0
+    healthcheck:
+      test: 
+        - CMD
+        - bash
+        - -c
+        - curl -sf http://$$HOSTNAME:19559/status
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: on-failure
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      caasm:
+        aliases:
+          - metad
+
+  storaged:
+    image: vesoft/nebula-storaged:${NEBULA_VERSION:-v3.6.0}
+    hostname: storaged
+    environment:
+      USER: ${NEBULA_USER:-root}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - nebula-storaged:/data/storage:rw
+    deploy:
+      resources:
+        limits:
+          memory: ${NEBULA_STORAGED_MEMORY:-2048M}
+    command:
+      - --meta_server_addrs=metad:9559
+      - --local_ip=storaged
+      - --ws_ip=storaged
+      - --port=9779
+      - --ws_http_port=19779
+      - --data_path=/data/storage
+      - --logtostderr=true
+      - --redirect_stdout=false
+      - --v=0
+      - --minloglevel=0
+    healthcheck:
+      test: 
+        - CMD
+        - bash
+        - -c
+        - curl -sf http://$$HOSTNAME:19779/status
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: on-failure
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      caasm:
+        aliases:
+          - storaged
+
+  listener:
+    image: vesoft/nebula-storaged:${NEBULA_VERSION:-v3.6.0}
+    hostname: listener
+    environment:
+      USER: ${NEBULA_USER:-root}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - nebula-listener:/data/listener:rw
+    deploy:
+      resources:
+        limits:
+          memory: ${NEBULA_LISTENER_MEMORY:-2048M}
+    command:
+      - --meta_server_addrs=metad:9559
+      - --local_ip=listener
+      - --ws_ip=listener
+      - --port=9789
+      - --ws_http_port=19789
+      - --data_path=/data/storage
+      - --listener_path=/data/listener
+      - --logtostderr=true
+      - --redirect_stdout=false
+      - --v=0
+      - --minloglevel=0
+    healthcheck:
+      test: 
+        - CMD
+        - bash
+        - -c
+        - curl -sf http://$$HOSTNAME:19789/status
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: on-failure
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      caasm:
+        aliases:
+          - listener
+
+  graphd:
+    image: vesoft/nebula-graphd:${NEBULA_VERSION:-v3.6.0}
+    hostname: graphd
+    environment:
+      USER: ${NEBULA_USER:-root}
+      TZ: ${TZ:-Asia/Shanghai}
+    deploy:
+      resources:
+        limits:
+          memory: ${NEBULA_GRAPHD_MEMORY:-2048M}
+    command:
+      - --meta_server_addrs=metad:9559
+      - --port=9669
+      - --local_ip=graphd
+      - --ws_ip=graphd
+      - --ws_http_port=19669
+      - --logtostderr=true
+      - --redirect_stdout=false
+      - --v=0
+      - --minloglevel=0
+    healthcheck:
+      test: 
+        - CMD
+        - bash
+        - -c
+        - curl -sf http://$$HOSTNAME:19669/status
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: on-failure
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      caasm:
+        aliases:
+          - graphd
+  
+  init:
+    image: vesoft/nebula-console:${NEBULA_VERSION:-v3.6.0}
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./initdb.d:/docker-entrypoint-initdb.d:rw
+    entrypoint: '/bin/sh'
+    command:
+      - -c
+      - |
+        for f in /docker-entrypoint-initdb.d/*; do
+          echo "Attempt to execute Nebula Graph SQL file $$f. "
+          for i in $$(seq 1 60); do
+            output=$$(nebula-console -addr graphd -port 9669 -u root -p nebula -f $$f 2>&1)
+            echo $$output | grep -i error
+            if [[ $$? != 0 ]]; then
+              break
+            fi
+            echo $$output | grep -i existed
+            if [[ $$? == 0 ]]; then
+              break
+            fi
+            sleep 3
+            echo "Wait for 3 seconds and retry. "
+          done
+          echo "Nebula Graph SQL file $$f done. "
+          echo "Output: $$output"
+          sleep 20
+          echo "Wait for 20 seconds to execute next Nebula Graph SQL file. "
+        done
+        echo "All INIT NGQL DONE"
+    networks:
+      caasm:
+        aliases:
+          - init
+
+  spark:
+    image: ${COMPOSE_PROJECT_NAME}/spark:${VERSION:-0.0.0}-s${SPARK_VERSION:-3.3.4}
+    build:
+      context: docker
+      dockerfile: spark.Dockerfile 
+      args:
+        SPARK_VERSION: ${SPARK_VERSION:-3.3.4}
+        ES_VERSION: ${ES_VERSION:-7.17.23}
+    environment:
+      SPARK_RPC_AUTHENTICATION_ENABLED: no
+      SPARK_RPC_ENCRYPTION_ENABLED: no
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: no
+      SPARK_SSL_ENABLED: no
+      SPARK_USER: ${SPARK_USER:-spark}
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: ${TZ:-Asia/Shanghai}
+    deploy:
+      resources:
+        limits:
+          memory: ${SPARK_MEMORY:-2048M}
+    healthcheck:
+      test: 
+        - CMD
+        - timeout
+        - '5'
+        - bash
+        - -c
+        - echo >/dev/tcp/localhost/8080
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: on-failure
+  
+  es:
+    image: ${COMPOSE_PROJECT_NAME}/elasticsearch:${VERSION:-0.0.0}-e${ES_VERSION:-7.17.23}
+    build:
+      context: docker
+      dockerfile: es.Dockerfile 
+      args:
+        ES_VERSION: ${ES_VERSION:-7.17.23}
+    hostname: es
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      discovery.type: single-node
+      network.bind_host: 0.0.0.0
+      cluster.routing.allocation.disk.threshold_enabled: true
+      cluster.routing.allocation.disk.watermark.low: 95%
+      cluster.routing.allocation.disk.watermark.high: 98%
+      cluster.routing.allocation.disk.watermark.flood_stage: 99%
+      bootstrap.memory_lock: true
+      xpack.security.enabled: false
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - es:/usr/share/elasticsearch/data:rw
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: ${ES_MEMORY:-2048M}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -s http://localhost:9200 | grep -q 'You Know, for Search'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: on-failure
+    networks:
+      caasm:
+        aliases:
+          - es

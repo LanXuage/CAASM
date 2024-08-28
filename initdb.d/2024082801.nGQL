@@ -1,0 +1,1 @@
+CREATE SPACE IF NOT EXISTS caasm(partition_num=20, replica_factor=1, vid_type=FIXED_STRING(32));
