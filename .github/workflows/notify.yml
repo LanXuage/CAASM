@@ -6,7 +6,10 @@ jobs:
   notify-wxwork:
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Send notifications to WXWork
+        run: |
           curl '${{ secrets.WX_WORK_WOODEN_BOAT_BOT_WEBHOOK }}' \
             -H 'Content-Type: application/json' \
             -d "{
