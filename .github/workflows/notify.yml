@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Send notifications to WXWork
         run: |
           curl '${{ secrets.WX_WORK_WOODEN_BOAT_BOT_WEBHOOK }}' \
