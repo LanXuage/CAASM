@@ -1,0 +1,55 @@
+USE caasm;
+
+CREATE TAG IF NOT EXISTS graph( \
+    graph_name STRING NOT NULL, \
+    graph_desc STRING NULL, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS model( \
+    model_name STRING NOT NULL, \
+    model_desc STRING NULL, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS field( \
+    field_name STRING NOT NULL, \
+    field_desc STRING NULL, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS field_collect( \
+    collect_name STRING NOT NULL, \
+    collect_desc STRING NULL, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE EDGE IF NOT EXISTS field_e_collect( \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE EDGE IF NOT EXISTS field_e_model( \
+    value_type STRING NOT NULL, \
+    value_default STRING NULL, \
+    index_type INT8 NOT NULL DEFAULT 0, \
+    allow_null bool NOT NULL DEFAULT false, \
+    value_unique bool NOT NULL DEFAULT false, \
+    field_sensitive bool NOT NULL DEFAULT false, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE EDGE IF NOT EXISTS model_e_model( \
+    reation_name STRING NOT NULL, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE EDGE IF NOT EXISTS model_e_graph( \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
