@@ -1,0 +1,19 @@
+name: GitHub Push Notify
+run-name: ${{ github.actor }} Push
+on: 
+  - push
+jobs:
+  notify-wxwork:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl '${{ secrets.WX_WORK_WOODEN_BOAT_BOT_WEBHOOK }}' \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"msgtype\": \"markdown\",
+              \"markdown\": {
+                \"content\": \"Github: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }}) \n> 用户名：${{ github.event.head_commit.author.name }} \n> 事件名：${{ github.event_name }} \n> 变更文件：\n\`\`\`sh\n`git diff-tree --no-commit-id --stat ${{ github.event.head_commit.author.name }}`\n\`\`\`\",
+                \"mentioned_list\": [\"@all\"],
+                \"mentioned_mobile_list\": [\"@all\"]
+              }
+            }"
