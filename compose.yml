@@ -19,6 +19,3 @@ volumes:
   nebula-listener:
     name: ${COMPOSE_PROJECT_NAME}-listener
     driver: local
-  nebula-init:
-    name: ${COMPOSE_PROJECT_NAME}-init
-    driver: local
