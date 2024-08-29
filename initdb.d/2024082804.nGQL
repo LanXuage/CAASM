@@ -1,1 +1,71 @@
 USE caasm;
+CREATE TAG IF NOT EXISTS caasm_user(
+    username STRING NOT NULL, 
+    passwd FIXED_STRING(32) NOT NULL, 
+    real_name STRING NULL, 
+    phone STRING NULL, 
+    email STRING NULL,
+    status INT8 NOT NULL DEFAULT 0, # 0-Not Active, 1-Active, 2-Disabled, 3-Deactivated
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TAG IF NOT EXISTS caasm_user_group(
+    user_group_name STRING NOT NULL, 
+    user_group_desc STRING NULL, 
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TAG IF NOT EXISTS caasm_role(
+    role_name STRING NOT NULL,
+    role_desc STRING NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TAG IF NOT EXISTS caasm_perm(
+    perm_name STRING NOT NULL,
+    perm_desc STRING NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TAG IF NOT EXISTS caasm_perm_group(
+    perm_group_name STRING NOT NULL,
+    perm_group_desc STRING NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS user_e_group(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS user_e_role(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS user_group_e_role(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS user_group_e_group(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS role_inherit(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS role_mutex(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS perm_group_e_role(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE EDGE IF NOT EXISTS perm_e_group(
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
