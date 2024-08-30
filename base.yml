@@ -167,13 +167,14 @@ services:
       TZ: ${TZ:-Asia/Shanghai}
     volumes:
       - ./initdb.d:/docker-entrypoint-initdb.d:rw
+      - nebula-metad:/data/meta:rw
     entrypoint: '/bin/sh'
     command:
       - -c
       - |
         for f in /docker-entrypoint-initdb.d/*; do
           echo "Attempt to execute Nebula Graph SQL file $$f. "
-          cat /docker-entrypoint-initdb.d/.done | grep $$f
+          cat /data/meta/.done | grep $$f
           if [[ $$? == 0 ]]; then
             continue
           fi
@@ -181,12 +182,12 @@ services:
             output=$$(nebula-console -addr graphd -port 9669 -u root -p nebula -f $$f 2>&1)
             echo $$output | grep -i error
             if [[ $$? != 0 ]]; then
-              echo $$f >> /docker-entrypoint-initdb.d/.done
+              echo $$f >> /data/meta/.done
               break
             fi
             echo $$output | grep -i existed
             if [[ $$? == 0 ]]; then
-              echo $$f >> /docker-entrypoint-initdb.d/.done
+              echo $$f >> /data/meta/.done
               break
             fi
             sleep 3

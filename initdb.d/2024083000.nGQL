@@ -5,7 +5,7 @@ CREATE TAG IF NOT EXISTS adapter( \
     adapter_desc STRING NOT NULL DEFAULT '', \
     adapter_conf STRING NOT NULL DEFAULT '{}', \
     confidence INT8 NOT NULL DEFAULT 60, \
-    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
@@ -16,7 +16,7 @@ CREATE TAG IF NOT EXISTS gather_plan( \
     cron_expr STRING NOT NULL, \
     plan_conf STRING NOT NULL DEFAULT '{}', \
     confidence INT8 NOT NULL DEFAULT 60, \
-    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
@@ -24,23 +24,23 @@ CREATE TAG IF NOT EXISTS mapping_temp( \
     temp_name STRING NOT NULL, \
     temp_desc STRING NOT NULL DEFAULT '', \
     confidence INT8 NOT NULL DEFAULT 60, \
-    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS task( \
     task_type INT8 NOT NULL DEFAULT 0, \
     task_status INT8 NOT NULL DEFAULT 0, \
-    started_at TIMESTAMP NOT NULL DEFAULT timestamp(0) \
-    ended_at TIMESTAMP NOT NULL DEFAULT timestamp(0) \
-    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    started_at TIMESTAMP NOT NULL DEFAULT timestamp(0), \
+    ended_at TIMESTAMP NOT NULL DEFAULT timestamp(0), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS mapping( \
     mapping_rule STRING NOT NULL, \
     confidence INT8 NOT NULL DEFAULT 60, \
-    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
