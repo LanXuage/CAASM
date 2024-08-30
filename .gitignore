@@ -1,3 +1,5 @@
 .env
 .done
 *.pyc
+.venv/
+__pycache__/
