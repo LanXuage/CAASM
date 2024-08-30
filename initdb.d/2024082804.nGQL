@@ -1,39 +1,39 @@
-USE caasm; # status 0-Not Active, 1-Active, 2-Disabled, 3-Deactivated 
+USE caasm; # user_status 0-Not Active, 1-Active, 2-Disabled, 3-Deactivated 
 CREATE TAG IF NOT EXISTS caasm_user( \
     username STRING NOT NULL, \
     passwd FIXED_STRING(32) NOT NULL, \
-    real_name STRING NULL, \
-    phone STRING NULL, \
-    email STRING NULL, \
-    status INT8 NOT NULL DEFAULT 0, \
+    real_name STRING NOT NULL DEFAULT '', \
+    phone STRING NOT NULL DEFAULT '', \
+    email STRING NOT NULL DEFAULT '', \
+    user_status INT8 NOT NULL DEFAULT 0, \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS caasm_user_group( \
     user_group_name STRING NOT NULL, \
-    user_group_desc STRING NULL, \
+    user_group_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS caasm_role( \
     role_name STRING NOT NULL, \
-    role_desc STRING NULL, \
+    role_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS caasm_perm( \
     perm_name STRING NOT NULL, \
-    perm_desc STRING NULL, \
+    perm_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS caasm_perm_group( \
     perm_group_name STRING NOT NULL, \
-    perm_group_desc STRING NULL, \
+    perm_group_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
@@ -67,5 +67,10 @@ CREATE EDGE IF NOT EXISTS perm_group_e_role( \
 );
 
 CREATE EDGE IF NOT EXISTS perm_e_group( \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE EDGE IF NOT EXISTS user_operates( \
+    info STRING NOT NULL DEFAULT '', \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );

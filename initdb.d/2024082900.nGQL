@@ -2,28 +2,28 @@ USE caasm;
 
 CREATE TAG IF NOT EXISTS graph( \
     graph_name STRING NOT NULL, \
-    graph_desc STRING NULL, \
+    graph_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS model( \
     model_name STRING NOT NULL, \
-    model_desc STRING NULL, \
+    model_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS field( \
     field_name STRING NOT NULL, \
-    field_desc STRING NULL, \
+    field_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
 CREATE TAG IF NOT EXISTS field_collect( \
     collect_name STRING NOT NULL, \
-    collect_desc STRING NULL, \
+    collect_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
@@ -34,7 +34,7 @@ CREATE EDGE IF NOT EXISTS field_e_collect( \
 
 CREATE EDGE IF NOT EXISTS field_e_model( \
     value_type STRING NOT NULL, \
-    value_default STRING NULL, \
+    value_default STRING NOT NULL DEFAULT '', \
     index_type INT8 NOT NULL DEFAULT 0, \
     allow_null bool NOT NULL DEFAULT false, \
     value_unique bool NOT NULL DEFAULT false, \
@@ -53,3 +53,110 @@ CREATE EDGE IF NOT EXISTS model_e_graph( \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
+CREATE TAG IF NOT EXISTS int8_value( \
+    v INT8 NOT NULL DEFAULT 0, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS int16_value( \
+    v INT16 NOT NULL DEFAULT 0, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS int32_value( \
+    v INT32 NOT NULL DEFAULT 0, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS int64_value( \
+    v INT64 NOT NULL DEFAULT 0, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS float_value( \
+    v FLOAT NOT NULL DEFAULT 0.0, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS double_value( \
+    v DOUBLE NOT NULL DEFAULT 0.0, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS bool_value( \
+    v BOOL NOT NULL DEFAULT false, \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS string_value( \
+    v STRING NOT NULL DEFAULT '', \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS date_value( \
+    v DATE NOT NULL DEFAULT date('1970-01-01'), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS time_value( \
+    v TIME NOT NULL DEFAULT time('00:00:00.0'), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS datetime_value( \
+    v DATETIME NOT NULL DEFAULT datetime(0), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS timestamp_value( \
+    v TIMESTAMP NOT NULL DEFAULT timestamp(0), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS point_value( \
+    v GEOGRAPHY(POINT) NOT NULL DEFAULT st_geogfromtext('POINT(0 0)'), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS line_value( \
+    v GEOGRAPHY(LINESTRING) NOT NULL DEFAULT st_geogfromtext('LINESTRING(0 0, 0 0)'), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS polygon_value( \
+    v GEOGRAPHY(POLYGON) NOT NULL DEFAULT st_geogfromtext('POLYGON((0 0, 0 0, 0 0, 0 0))'), \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS list_value( \
+    v STRING NOT NULL DEFAULT '[]', \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS set_value( \
+    v STRING NOT NULL DEFAULT '[]', \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE TAG IF NOT EXISTS map_value( \
+    v STRING NOT NULL DEFAULT '{}', \
+    updated_at TIMESTAMP NOT NULL DEFAULT now() \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
