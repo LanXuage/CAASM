@@ -128,3 +128,13 @@ services:
       - 9300:9300
     profiles:
       - dev
+
+  redis-dev:
+    extends:
+      file: base.yml
+      service: redis
+    container_name: ${COMPOSE_PROJECT_NAME}-redis-dev
+    ports:
+      - 6379:6379
+    profiles:
+      - dev

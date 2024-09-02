@@ -1,6 +1,6 @@
 USE caasm;
 
-CREATE TAG IF NOT EXISTS graph( \
+CREATE TAG IF NOT EXISTS caasm_graph( \
     graph_name STRING NOT NULL, \
     graph_desc STRING NOT NULL DEFAULT '', \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \

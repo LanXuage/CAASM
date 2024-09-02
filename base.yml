@@ -281,3 +281,25 @@ services:
       caasm:
         aliases:
           - es
+  redis:
+    image: redis:7.4.0
+    hostname: redis
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASS:-redispass}
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      caasm:
+        aliases:
+          - redis

@@ -6,7 +6,6 @@ from os import environ
 
 def init_module_from_env(module_name: str):
     module = sys.modules[module_name]
-    print(module)
     for var_key in dir(module):
         if not var_key.startswith("CAASM_WEB_"):
             continue

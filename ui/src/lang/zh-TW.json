@@ -1,0 +1,15 @@
+{
+    "uname": "用戶名",
+    "passwd": "密碼",
+    "captcha": "驗證碼",
+    "login": "登錄",
+    "reset": "重置",
+    "uname_required_tip": "請輸入有效的用戶名",
+    "len_tip": "長度應爲4到12",
+    "passwd_required_tip": "請輸入有效的密碼",
+    "captcha_required_tip": "請輸入有效的驗證碼",
+    "dark_mode": "黑夜模式",
+    "light_mode": "白天模式",
+    "invalid_captcha": "哎呦，這不是一個有效的驗證碼哦！",
+    "invalid_username_or_password": "哎呦，這不是一個有效的用戶名或密碼哦！"
+}

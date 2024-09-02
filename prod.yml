@@ -108,3 +108,11 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-es
     profiles:
       - prod
+
+  redis:
+    extends:
+      file: base.yml
+      service: redis
+    container_name: ${COMPOSE_PROJECT_NAME}-redis
+    profiles:
+      - prod

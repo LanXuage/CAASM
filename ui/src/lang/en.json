@@ -1,0 +1,15 @@
+{
+    "uname": "Username",
+    "passwd": "Password",
+    "captcha": "Captcha",
+    "login": "Login",
+    "reset": "Reset",
+    "uname_required_tip": "Please enter a valid Username",
+    "len_tip": "Length should be 4 to 12",
+    "passwd_required_tip": "Please enter a valid Password",
+    "captcha_required_tip": "Please enter a valid Captcha",
+    "dark_mode": "Dark",
+    "light_mode": "Light",
+    "invalid_captcha": "Oops, this isn't a valid captcha! ",
+    "invalid_username_or_password": "Oops, this isn't a valid Username or Password! "
+}
