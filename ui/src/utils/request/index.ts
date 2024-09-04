@@ -8,6 +8,8 @@ import axios,
     HttpStatusCode
 } from 'axios'
 import { ResponseModel } from './types'
+import { useUserStore } from '../../store/user'
+import { useRouter } from 'vue-router'
 
 class HttpRequest {
     service: AxiosInstance
@@ -20,8 +22,9 @@ class HttpRequest {
 
         this.service.interceptors.request.use(
             (config: InternalAxiosRequestConfig) => {
-                if (import.meta.env.VITE_APP_TOKEN_KEY ) {
-                    config.headers[import.meta.env.VITE_APP_TOKEN_KEY] = ''
+                const userStore = useUserStore()
+                if (import.meta.env.VITE_APP_TOKEN_KEY && userStore.token) {
+                    config.headers[import.meta.env.VITE_APP_TOKEN_KEY] = userStore.token
                 }
                 return config
             },
@@ -40,6 +43,8 @@ class HttpRequest {
 
         this.service.interceptors.response.use(
             (response: AxiosResponse<ResponseModel>): AxiosResponse['data'] => {
+                const userStore = useUserStore()
+                const router = useRouter()
                 const { data } = response
                 const { code } = data
                 if (code) {
@@ -48,8 +53,11 @@ class HttpRequest {
                             case HttpStatusCode.NotFound:
                                 // the method to handle this code
                                 break;
-                            case HttpStatusCode.Forbidden:
+                            case HttpStatusCode.Unauthorized:
                                 // the method to handle this code
+                                userStore.token = undefined
+                                userStore.user = undefined
+                                router.push('/login')
                                 break;
                             default:
                                 break;
@@ -100,4 +108,4 @@ class HttpRequest {
 
 const httpRequest = new HttpRequest()
 
-export default httpRequest;
+export default httpRequest

@@ -50,11 +50,16 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             console.log('submit!')
             const loginParam = cloneDeep(loginForm)
             loginParam.password = CryptoJs.SHA256(`${loginForm.s}_${loginForm.captcha}_${loginForm.username}_${loginForm.password}`).toString()
-            UserApi.login(loginParam).then((res) => {
-                console.log('token', res)
-                userStore.token = res;
+            UserApi.login(loginParam).then((token) => {
+                console.log('token', token)
+                userStore.token = token
                 console.log('router', router.currentRoute.value.redirectedFrom?.path)
                 router.push('/')
+                UserApi.getProfile().then((user) => {
+                    userStore.user = user
+                }).catch((msg) => {
+                    ElMessage.error(t(msg))
+                })
             }).catch((msg) => {
                 ElMessage.error(t(msg))
                 refreshCaptcha()

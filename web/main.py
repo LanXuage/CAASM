@@ -13,24 +13,35 @@ from fastapi.responses import JSONResponse
 from captcha.image import ImageCaptcha
 from nebula3.Config import SessionPoolConfig
 from nebula3.gclient.net.SessionPool import SessionPool
-from settings import TOKEN_KEY, TOKEN_TTL, REDIS_URL, NEBULA_USERNAME, NEBULA_PASSWORD, NEBULA_SPACE_NAME, NEBULA_HOST, NEBULA_PORT
-
-
-
+from settings import (
+    CAASM_TOKEN_FERNET_KEY,
+    CAASM_TOKEN_TTL,
+    CAASM_REDIS_URL,
+    CAASM_NEBULA_USERNAME,
+    CAASM_NEBULA_PASSWORD,
+    CAASM_NEBULA_SPACE_NAME,
+    CAASM_NEBULA_HOST,
+    CAASM_NEBULA_PORT,
+)
 
 
 @asynccontextmanager
 async def lifespan(app: App):
-    app.state
     logger.info("Initialize token fernet ...")
-    app.token_fernet = fernet.Fernet(key=TOKEN_KEY)
-    app.token_ttl = TOKEN_TTL
+    app.token_fernet = fernet.Fernet(key=CAASM_TOKEN_FERNET_KEY)
+    app.invalid_tokens = set()
+    app.token_ttl = CAASM_TOKEN_TTL
     logger.info("Initialize image captcha ...")
     app.image_captcha = ImageCaptcha(width=320, height=120, font_sizes=(62, 70, 76))
     logger.info("Initialize asyncio redis ...")
-    app.redis = aioredis.from_url(REDIS_URL)
+    app.redis = aioredis.from_url(CAASM_REDIS_URL)
     logger.info("Initialize Nebula session pool ...")
-    app.nebula_sess_pool = SessionPool(NEBULA_USERNAME, NEBULA_PASSWORD, NEBULA_SPACE_NAME, [(NEBULA_HOST, NEBULA_PORT)])
+    app.nebula_sess_pool = SessionPool(
+        CAASM_NEBULA_USERNAME,
+        CAASM_NEBULA_PASSWORD,
+        CAASM_NEBULA_SPACE_NAME,
+        [(CAASM_NEBULA_HOST, CAASM_NEBULA_PORT)],
+    )
     app.nebula_sess_pool.init(SessionPoolConfig())
     yield
     logger.info("Closing asyncio redis ...")

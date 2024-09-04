@@ -11,5 +11,11 @@
     "dark_mode": "Dark",
     "light_mode": "Light",
     "invalid_captcha": "Oops, this isn't a valid captcha! ",
-    "invalid_username_or_password": "Oops, this isn't a valid Username or Password! "
+    "invalid_username_or_password": "Oops, this isn't a valid Username or Password! ",
+    "model_mismatch": "Data model mismatch! ",
+    "no_this_user": "User does not exist! ",
+    "invalid_token": "Invalid token! ",
+    "profile": "My Profile",
+    "settings": "Settings",
+    "logout": "Logout"
 }

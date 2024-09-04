@@ -11,5 +11,11 @@
     "dark_mode": "黑夜模式",
     "light_mode": "白天模式",
     "invalid_captcha": "哎呦，这不是一个有效的验证码哦！",
-    "invalid_username_or_password": "哎呦，这不是一个有效的用户名或密码哦！"
+    "invalid_username_or_password": "哎呦，这不是一个有效的用户名或密码哦！",
+    "model_mismatch": "数据模型不匹配！",
+    "no_this_user": "用户不存在！",
+    "invalid_token": "无效的Token！",
+    "profile": "个人信息",
+    "settings": "设置",
+    "logout": "退出登录"
 }

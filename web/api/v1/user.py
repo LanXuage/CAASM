@@ -6,7 +6,12 @@ import hashlib
 
 from common.app import App
 from common.log import logger
-from fastapi import APIRouter, Request
+from common.nebula import make_object
+from typing import Optional, List, Dict, Annotated
+from deps.permission import PermissionChecker, LOGIN, LOGOUT
+from fastapi import APIRouter, Request, Depends, Header
+from nebula3.common.ttypes import Row, Value, NMap
+from settings import CAASM_TOKEN_KEY
 
 user_router = APIRouter()
 
@@ -33,3 +38,37 @@ async def login(login_req: model.LoginRequest, req: Request) -> model.Response:
     logger.info("valid passwd")
     token = app.token_fernet.encrypt_at_time(data=msgpack.packb({"username": login_req.username}), current_time=int(time.time())).decode()  # type: ignore
     return model.Response(data=token)
+
+
+@user_router.get(path="/user/action/logout", response_model=model.Response)
+async def logout(logout: dict = Depends(LOGOUT)) -> model.Response:
+    return model.Response(data=logout)
+
+
+@user_router.get(path="/user", response_model=model.Response)
+async def get_profile(req: Request, user: dict = Depends(LOGIN)):
+    app: App = req.app
+    logger.info("user_id %s", user)
+    ngql = "LOOKUP ON caasm_user WHERE caasm_user.username == $username YIELD id(VERTEX) AS id, properties(VERTEX) AS props"
+    result = app.nebula_sess_pool.execute_py(ngql, {"username": user.get("username")})
+    rows: Optional[List[Row]] = result.rows()
+    assert rows, "no_this_user"
+    row = rows[0]
+    values: Optional[List[Value]] = row.values
+    assert values, "no_this_user"
+    props: Optional[NMap] = values[1].value
+    assert props, "no_this_user"
+    props_dict: Dict[bytes, Value] = props.kvs
+    assert isinstance(values[0].value, bytes), "model_mismatch"
+    return model.Response(
+        data=make_object(model.User, values[0].value.decode(), props_dict)
+    )
+
+
+@user_router.get(path="/user/{user_id}", response_model=model.Response)
+async def get_user(
+    user_id: Optional[str],
+    has_perms: bool = Depends(PermissionChecker(["get_anything"])),
+):
+    logger.info("user_id %s", user_id)
+    return model.Response(data=has_perms)
