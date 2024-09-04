@@ -31,8 +31,9 @@ class LoginChecker:
         if self.required == LoginState.NOCARE:
             return True
         try:
+            logger.info("token %s, invalid_tokens %s", token, app.invalid_tokens)
             assert (
-                self.required == LoginState.LOGIN and token in app.invalid_tokens
+                self.required != LoginState.LOGIN or token not in app.invalid_tokens
             ), "invalid_token"
             data = msgpack.unpackb(
                 app.token_fernet.decrypt_at_time(

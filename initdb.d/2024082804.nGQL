@@ -62,7 +62,11 @@ CREATE EDGE IF NOT EXISTS role_mutex( \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
-CREATE EDGE IF NOT EXISTS perm_group_e_role( \
+CREATE EDGE IF NOT EXISTS perm_e_role( \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE EDGE IF NOT EXISTS perm_include( \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
 
