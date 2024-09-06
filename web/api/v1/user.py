@@ -1,5 +1,6 @@
 #!/bin/env python3
 import time
+import json
 import model
 import msgpack
 import hashlib
@@ -7,11 +8,10 @@ import hashlib
 from common.app import App
 from common.log import logger
 from common.nebula import make_object
-from typing import Optional, List, Dict, Annotated
+from typing import Optional, List, Dict
 from deps.permission import PermissionChecker, LOGIN, LOGOUT
-from fastapi import APIRouter, Request, Depends, Header
-from nebula3.common.ttypes import Row, Value, NMap
-from settings import CAASM_TOKEN_KEY
+from fastapi import APIRouter, Request, Depends
+from nebula3.common.ttypes import Row, Value, NMap, NList
 
 user_router = APIRouter()
 
@@ -48,7 +48,7 @@ async def logout(logout: dict = Depends(LOGOUT)) -> model.Response:
 @user_router.get(path="/user", response_model=model.Response)
 async def get_profile(req: Request, user: dict = Depends(LOGIN)):
     app: App = req.app
-    logger.info("user_id %s", user)
+    logger.info("user %s", user)
     ngql = "LOOKUP ON caasm_user WHERE caasm_user.username == $username YIELD id(VERTEX) AS id, properties(VERTEX) AS props"
     result = app.nebula_sess_pool.execute_py(ngql, {"username": user.get("username")})
     rows: Optional[List[Row]] = result.rows()
@@ -61,8 +61,52 @@ async def get_profile(req: Request, user: dict = Depends(LOGIN)):
     props_dict: Dict[bytes, Value] = props.kvs
     assert isinstance(values[0].value, bytes), "model_mismatch"
     return model.Response(
-        data=make_object(model.User, values[0].value.decode(), props_dict)
+        data=make_object(model.User, props_dict, values[0].value.decode())
     )
+
+
+@user_router.get(path="/user/menus", response_model=model.Response)
+async def get_permission(req: Request, user: dict = Depends(LOGIN)):
+    app: App = req.app
+    logger.info("user %s", user)
+    ngql = """LOOKUP ON caasm_perm_group WHERE caasm_perm_group.perm_group_name == 'menu' YIELD id(vertex) AS i \
+        | GO FROM $-.i OVER perm_e_group REVERSELY YIELD src(edge) AS i \
+        | GO 1 TO 4 STEPS FROM $-.i OVER perm_include, perm_e_role YIELD dst(edge) AS i, src(edge) AS j \
+        | GO FROM $-.i OVER user_e_role REVERSELY WHERE $$.caasm_user.username == $username YIELD $-.j AS i \
+        | GO 1 TO 4 STEPS FROM $-.i OVER perm_include YIELD properties($^) AS s, properties($$) AS t \
+        | GROUP BY $-.s YIELD $-.s AS menu, collect($-.t) AS submenus"""
+    result = app.nebula_sess_pool.execute_py(ngql, {"username": user.get("username")})
+    menus_map: Dict[str, model.Perm] = {}
+    data: dict[str, model.Perm] = {}
+    for row in result.rows():
+        assert isinstance(row, Row), "no_menus"
+        menu_value = row.values[0]
+        submenus_value = row.values[1]
+        assert isinstance(menu_value, Value), "no_menus"
+        assert isinstance(menu_value.value, NMap), "no_menus"
+        menu = make_object(model.Perm, menu_value.value.kvs)
+        menus_map[menu.perm_name] = menu
+        assert isinstance(submenus_value, Value), "no_menus"
+        logger.info("submenus_value %s", submenus_value.value)
+        assert isinstance(submenus_value.value, NList), "no_menus"
+        for sub_row in submenus_value.value.values:
+            assert isinstance(sub_row, Value), "no_menus"
+            assert isinstance(sub_row.value, NMap), "no_menus"
+            submenu = make_object(model.Perm, sub_row.value.kvs)
+            if submenu.perm_name in data.keys():
+                menu.submenus.append(data.pop(submenu.perm_name))
+            else:
+                menus_map[submenu.perm_name] = submenu
+                menu.submenus.append(submenu)
+        tmp_menu = menus_map.get(menu.perm_name)
+        if tmp_menu is not None:
+            tmp_menu.submenus = menu.submenus
+        menu.submenus.sort(key=lambda e: e.created_at)
+        data[menu.perm_name] = menu
+    logger.info("result %s", result)
+    menus = list(data.values())
+    menus.sort(key=lambda e: e.created_at)
+    return model.Response(data=menus)
 
 
 @user_router.get(path="/user/{user_id}", response_model=model.Response)

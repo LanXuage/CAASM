@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { useUserStore } from '../../store/user'
-import { computed } from 'vue';
-import { User } from '../../api/user/types';
-import { UserApi } from '../../api';
-import { ElMessage } from 'element-plus';
-import { useRouter } from 'vue-router';
+import { computed, reactive, watch } from 'vue'
+import { Menu, User } from '../../api/user/types'
+import { UserApi } from '../../api'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
+import { ROUTES_MAP } from '../../router/constant'
 
 const userStore = useUserStore()
 const router = useRouter()
+const { t } = useI18n()
 
+const menus = reactive<Array<Menu>>([]);
 const token = computed<string | undefined>(() => userStore.token)
 const user = computed<User | undefined>(() => userStore.user)
 
@@ -24,7 +29,7 @@ function selectTheme(theme: string) {
 const userOpts = new Map([['logout', () => UserApi.logout().then((res) => {
     console.log('logout', res)
     userStore.user = undefined
-    userStore.token = undefined
+    userStore.token = ''
     router.push('/login')
 }).catch((msg) => ElMessage.error(msg))]])
 
@@ -33,31 +38,58 @@ function selectUserOpt(opt: string) {
     if (func) func()
 }
 
+function refreshMenu() {
+    if (userStore.token === '') return
+    UserApi.getProfile().then(user => userStore.user = user).catch(msg => ElMessage.error(t(msg)))
+    UserApi.getMyMenuPerms().then(res => {
+        console.log('menus', res)
+        menus.push(...res)
+    })
+}
+
+watch(storeToRefs(userStore).token, (newToken, oldToken) => {
+    console.log('newToken', newToken, 'oldToken', oldToken)
+    refreshMenu()
+})
+
+refreshMenu()
 </script>
 
 <template>
     <el-row>
         <el-col :xs="24" :sm="24" :md="4" :lg="4" :xl="4">
-            CAASM
+            <el-image style="height: 60px;" src="/logo.png" />
         </el-col>
         <el-col :xs="24" :sm="24" :md="token ? 16 : 18" :lg="token ? 16 : 18" :xl="token ? 16 : 18">
             <el-row>
-                <el-menu mode="horizontal" :ellipsis="false" :router="false">
-                    <el-menu-item :disabled="false">
-                        <template #title>菜单一</template>
-                    </el-menu-item>
-                    <el-sub-menu index="lang">
-                        <template #title>菜单二</template>
-                        <el-menu-item index="zh-CN">简体中文</el-menu-item>
-                        <el-menu-item index="en">English</el-menu-item>
-                        <el-menu-item index="zh-TW">繁體中文</el-menu-item>
-                    </el-sub-menu>
+                <el-menu mode="horizontal" :ellipsis="false" :router="true">
+                    <template v-for="menu, i in menus" :key="i">
+                        <el-menu-item v-if="menu.submenus.length === 0" :index="menu.permName"
+                            :route="ROUTES_MAP.get(menu.permName)">{{ $t(menu.permName)
+                            }}</el-menu-item>
+                        <el-sub-menu v-else :index="menu.permName">
+                            <template #title>{{ $t(menu.permName) }}</template>
+                            <template v-for="submenu, j in menu.submenus" :key="j">
+                                <el-menu-item v-if="submenu.submenus.length === 0" :index="submenu.permName"
+                                    :route="ROUTES_MAP.get(submenu.permName)">{{
+                                        $t(submenu.permName)
+                                    }}</el-menu-item>
+                                <el-sub-menu v-else :index="submenu.permName">
+                                    <template #title>{{ $t(submenu.permName) }}</template>
+                                    <el-menu-item v-for="subsubmenu, k in submenu.submenus" :index="subsubmenu.permName"
+                                        :route="ROUTES_MAP.get(subsubmenu.permName)" :key="k">{{
+                                            $t(subsubmenu.permName)
+                                        }}</el-menu-item>
+                                </el-sub-menu>
+                            </template>
+                        </el-sub-menu>
+                    </template>
                 </el-menu>
             </el-row>
         </el-col>
         <el-col :xs="24" :sm="24" :md="token ? 4 : 2" :lg="token ? 4 : 2" :xl="token ? 4 : 2" style="display: flex;">
             <el-dropdown v-if="token" style="margin: auto;" @command="selectUserOpt">
-                <div class="not-out-line">
+                <div class="not-out-line" style="text-align: center;">
                     <svg t="1725273259614" class="icon" viewBox="0 0 1024 1024" version="1.1"
                         xmlns="http://www.w3.org/2000/svg" p-id="10938" width="1.6em" height="1.6em">
                         <path

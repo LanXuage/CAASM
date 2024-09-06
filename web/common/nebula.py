@@ -2,15 +2,16 @@
 
 from common.log import logger
 from datetime import datetime
-from typing import Type, Any, Dict
 from nebula3.common.ttypes import Value
+from typing import Type, Any, Dict, Optional, TypeVar
 
+T = TypeVar("T")
 
-def make_object(model: Type[Any], id: str, props: Dict[bytes, Value]) -> Any:
+def make_object(model: Type[T], props: Dict[bytes, Value], id: Optional[str] = None) -> T:
     annotations = model.__annotations__
     logger.info("annotations %s", annotations)
     params: Dict[str, Any] = {}
-    if "id" in annotations.keys():
+    if "id" in annotations.keys() and id is not None:
         params["id"] = id
     for k, v in props.items():
         attr_key = k.decode()
@@ -26,6 +27,6 @@ def make_object(model: Type[Any], id: str, props: Dict[bytes, Value]) -> Any:
                 assert isinstance(v.value, int), "model_mismatch"
                 params[attr_key] = datetime.fromtimestamp(v.value)
             else:
-                logger.info("type not match %s - %s", attr_key, t)
+                logger.warning("type not match %s - %s", attr_key, t)
     logger.info("params %s", params)
     return model(**params)

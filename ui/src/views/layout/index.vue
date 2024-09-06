@@ -11,7 +11,7 @@ const useHeader = ref<boolean>(userStore.useHeader)
 
 <template>
     <el-container class="x-layout-content">
-        <el-header v-if="useHeader">
+        <el-header style="background-color: #282828;" v-if="useHeader">
             <x-menu />
         </el-header>
         <el-aside v-else>

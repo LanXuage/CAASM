@@ -78,3 +78,18 @@ CREATE EDGE IF NOT EXISTS user_operates( \
     info STRING NOT NULL DEFAULT '', \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
+
+CREATE TAG INDEX IF NOT EXISTS caasm_user_index on \
+    caasm_user(username(256), real_name(256), phone(256), email(256));
+
+CREATE TAG INDEX IF NOT EXISTS caasm_user_group_index on \
+    caasm_user_group(user_group_name(256), user_group_desc(256));
+
+CREATE TAG INDEX IF NOT EXISTS caasm_role_index on \
+    caasm_role(role_name(256), role_desc(256));
+
+CREATE TAG INDEX IF NOT EXISTS caasm_perm_index on \
+    caasm_perm(perm_name(256), perm_desc(256));
+
+CREATE TAG INDEX IF NOT EXISTS caasm_perm_group_index on \
+    caasm_perm_group(perm_group_name(256), perm_group_desc(256));

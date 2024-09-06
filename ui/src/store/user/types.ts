@@ -4,5 +4,5 @@ export interface UserState {
     user?: User
     lang: string
     useHeader: boolean
-    token?: string
+    token: string
 }

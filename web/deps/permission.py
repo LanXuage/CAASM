@@ -31,7 +31,6 @@ class LoginChecker:
         if self.required == LoginState.NOCARE:
             return True
         try:
-            logger.info("token %s, invalid_tokens %s", token, app.invalid_tokens)
             assert (
                 self.required != LoginState.LOGIN or token not in app.invalid_tokens
             ), "invalid_token"

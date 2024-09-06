@@ -9,30 +9,30 @@ INSERT VERTEX IF NOT EXISTS caasm_role(role_name, role_desc) VALUES \
 INSERT VERTEX IF NOT EXISTS caasm_perm_group(perm_group_name, perm_group_desc) VALUES \
     "f44811d114b0cb747236722fda4bb4a0":("menu", "menu_desc");
 
-INSERT VERTEX IF NOT EXISTS caasm_perm(perm_name, perm_desc) VALUES \
-    "7eac14ab78e33fda9aee7378b97209cd":("overview", "overview_desc"), \
-    "0b26f2bfe640233f0085b6f5b042bd24":("asset_inquiry", "asset_inquiry_desc"), \
-    "7168bea862daf18e91c7143806cced68":("user_permission", "user_permission_desc"), \
-    "84313ecfb89e8b7a87531e9788d74cea":("field_model", "field_model_desc"), \
-    "cd3a41454f3ac413c965e970707b32a9":("adapter_task", "adapter_task_desc"), \
-    "805ea4ac00fb993ea973babadee075e5":("system_settings", "system_settings_desc"), \
-    "9fc175c85b90e192674b7e5024e1d90b":("real_time_query", "real_time_query_desc"), \
-    "aa2fcc6836fa73c3cc21f8ca204742a1":("export_record", "export_record_desc"), \
-    "1f34504f2ec518edd0cd3db1f7f0736f":("query_scenario", "query_scenario_desc"), \
-    "ea12e71f48e8f6e9ff61234e1fb41453":("standing_book", "standing_book_desc"), \
-    "0eadc11a3ea6d6f89662f973e0711afb":("user_management", "user_management_desc"), \
-    "c41f9fa8efb7bc5f700cddb21d3774e3":("role_management", "role_management_desc"), \
-    "bb156cc6a0c6304190ab60d546bfb104":("perm_management", "perm_management_desc"), \
-    "a2ae3f9ff92564fffcf87df6bda4c7bf":("field_management", "field_management_desc"), \
-    "83f638077d97bd078c5efe6c528b00a9":("field_collect", "field_collect_desc"), \
-    "b05a31e9a360262e02fa1c17c49a41fd":("model_management", "model_management_desc"), \
-    "9391b7fb61ff567fc91f88817918760d":("graph_management", "graph_management_desc"), \
-    "08943ae01d70e6769cfd5d3109edb507":("adapter_management", "adapter_management_desc"), \
-    "d36b03ff0a6da13452f9700273723e51":("mappging_management", "mappging_management_desc"), \
-    "3791b8766e4725bd07b4c6f853e6017e":("plan_management", "plan_management_desc"), \
-    "cdd98630e00844249bbe2310474fe47d":("task_management", "task_management_desc"), \
-    "7a63c9ec9ccf250f1b699cb24ea23157":("license", "license_desc"), \
-    "317623234281174999944bd607c7ecb5":("about", "about_desc");
+INSERT VERTEX IF NOT EXISTS caasm_perm(perm_name, perm_desc, updated_at, created_at) VALUES \
+    "7eac14ab78e33fda9aee7378b97209cd":("overview", "overview_desc", timestamp("2024-09-05 12:00:00.000"), timestamp("2024-09-05 12:00:00.000")), \
+    "0b26f2bfe640233f0085b6f5b042bd24":("asset_inquiry", "asset_inquiry_desc", timestamp("2024-09-05 12:00:01.000"), timestamp("2024-09-05 12:00:01.000")), \
+    "7168bea862daf18e91c7143806cced68":("user_permission", "user_permission_desc", timestamp("2024-09-05 12:00:02.000"), timestamp("2024-09-05 12:00:02.000")), \
+    "84313ecfb89e8b7a87531e9788d74cea":("field_model", "field_model_desc", timestamp("2024-09-05 12:00:03.000"), timestamp("2024-09-05 12:00:03.000")), \
+    "cd3a41454f3ac413c965e970707b32a9":("adapter_task", "adapter_task_desc", timestamp("2024-09-05 12:00:04.000"), timestamp("2024-09-05 12:00:04.000")), \
+    "805ea4ac00fb993ea973babadee075e5":("system_settings", "system_settings_desc", timestamp("2024-09-05 12:00:05.000"), timestamp("2024-09-05 12:00:05.000")), \
+    "9fc175c85b90e192674b7e5024e1d90b":("real_time_query", "real_time_query_desc", timestamp("2024-09-05 12:00:06.000"), timestamp("2024-09-05 12:00:06.000")), \
+    "aa2fcc6836fa73c3cc21f8ca204742a1":("export_record", "export_record_desc", timestamp("2024-09-05 12:00:07.000"), timestamp("2024-09-05 12:00:07.000")), \
+    "1f34504f2ec518edd0cd3db1f7f0736f":("query_scenario", "query_scenario_desc", timestamp("2024-09-05 12:00:08.000"), timestamp("2024-09-05 12:00:08.000")), \
+    "ea12e71f48e8f6e9ff61234e1fb41453":("standing_book", "standing_book_desc", timestamp("2024-09-05 12:00:09.000"), timestamp("2024-09-05 12:00:09.000")), \
+    "0eadc11a3ea6d6f89662f973e0711afb":("user_management", "user_management_desc", timestamp("2024-09-05 12:00:10.000"), timestamp("2024-09-05 12:00:10.000")), \
+    "c41f9fa8efb7bc5f700cddb21d3774e3":("role_management", "role_management_desc", timestamp("2024-09-05 12:00:11.000"), timestamp("2024-09-05 12:00:11.000")), \
+    "bb156cc6a0c6304190ab60d546bfb104":("perm_management", "perm_management_desc", timestamp("2024-09-05 12:00:12.000"), timestamp("2024-09-05 12:00:12.000")), \
+    "a2ae3f9ff92564fffcf87df6bda4c7bf":("field_management", "field_management_desc", timestamp("2024-09-05 12:00:13.000"), timestamp("2024-09-05 12:00:13.000")), \
+    "83f638077d97bd078c5efe6c528b00a9":("field_collect", "field_collect_desc", timestamp("2024-09-05 12:00:14.000"), timestamp("2024-09-05 12:00:14.000")), \
+    "b05a31e9a360262e02fa1c17c49a41fd":("model_management", "model_management_desc", timestamp("2024-09-05 12:00:15.000"), timestamp("2024-09-05 12:00:15.000")), \
+    "9391b7fb61ff567fc91f88817918760d":("graph_management", "graph_management_desc", timestamp("2024-09-05 12:00:16.000"), timestamp("2024-09-05 12:00:16.000")), \
+    "08943ae01d70e6769cfd5d3109edb507":("adapter_management", "adapter_management_desc", timestamp("2024-09-05 12:00:17.000"), timestamp("2024-09-05 12:00:17.000")), \
+    "93e838305d987e1828bf1443bbfee4f5":("mapping_management", "mapping_management_desc", timestamp("2024-09-05 12:00:18.000"), timestamp("2024-09-05 12:00:18.000")), \
+    "3791b8766e4725bd07b4c6f853e6017e":("plan_management", "plan_management_desc", timestamp("2024-09-05 12:00:19.000"), timestamp("2024-09-05 12:00:19.000")), \
+    "cdd98630e00844249bbe2310474fe47d":("task_management", "task_management_desc", timestamp("2024-09-05 12:00:20.000"), timestamp("2024-09-05 12:00:20.000")), \
+    "7a63c9ec9ccf250f1b699cb24ea23157":("license", "license_desc", timestamp("2024-09-05 12:00:21.000"), timestamp("2024-09-05 12:00:21.000")), \
+    "317623234281174999944bd607c7ecb5":("about", "about_desc", timestamp("2024-09-05 12:00:22.000"), timestamp("2024-09-05 12:00:22.000"));
 
 INSERT EDGE IF NOT EXISTS user_e_role() VALUES \
     "c0c5e8cfab9a5bdef54a53c43663483e"->"4d99f3db591a170da8510eee208c66e3":();
@@ -66,7 +66,7 @@ INSERT EDGE IF NOT EXISTS perm_include() VALUES \
     "84313ecfb89e8b7a87531e9788d74cea"->"b05a31e9a360262e02fa1c17c49a41fd":(), \
     "84313ecfb89e8b7a87531e9788d74cea"->"9391b7fb61ff567fc91f88817918760d":(), \
     "cd3a41454f3ac413c965e970707b32a9"->"08943ae01d70e6769cfd5d3109edb507":(), \
-    "cd3a41454f3ac413c965e970707b32a9"->"d36b03ff0a6da13452f9700273723e51":(), \
+    "cd3a41454f3ac413c965e970707b32a9"->"93e838305d987e1828bf1443bbfee4f5":(), \
     "cd3a41454f3ac413c965e970707b32a9"->"3791b8766e4725bd07b4c6f853e6017e":(), \
     "cd3a41454f3ac413c965e970707b32a9"->"cdd98630e00844249bbe2310474fe47d":(), \
     "805ea4ac00fb993ea973babadee075e5"->"7a63c9ec9ccf250f1b699cb24ea23157":(), \

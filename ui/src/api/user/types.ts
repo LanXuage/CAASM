@@ -15,3 +15,11 @@ export interface User {
     updatedAt: Date
     createdAt: Date
 }
+
+export interface Menu {
+    permName: string
+    permDesc: string
+    updatedAt: Date
+    createdAt: Date
+    submenus: Array<Menu>
+}

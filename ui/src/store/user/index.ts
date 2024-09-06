@@ -5,7 +5,7 @@ import i18n from '../../lang'
 export const useUserStore = defineStore('user', {
     state: (): UserState => ({
         user: undefined,
-        token: undefined,
+        token: '',
         lang: 'zh-CN',
         useHeader: true,
     }),
@@ -15,8 +15,14 @@ export const useUserStore = defineStore('user', {
             i18n.global.locale.value = lang.toLowerCase() as any
         },
     },
-    persist: {
-        paths: ['token', 'lang'],
-        storage: localStorage
-    },
+    persist: [
+        {
+            paths: ['token', 'lang'],
+            storage: localStorage
+        },
+        {
+            paths: ['user'],
+            storage: sessionStorage
+        }
+    ],
 })
