@@ -116,3 +116,11 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-redis
     profiles:
       - prod
+  
+  web:
+    extends:
+      file: web/prod.yml
+      service: web
+    container_name: ${COMPOSE_PROJECT_NAME}-web
+    profiles:
+      - prod

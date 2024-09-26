@@ -1,6 +1,5 @@
 #!/bin/env python3
 import time
-import json
 import model
 import msgpack
 import hashlib
@@ -11,7 +10,7 @@ from common.nebula import make_object
 from typing import Optional, List, Dict
 from deps.permission import PermissionChecker, LOGIN, LOGOUT
 from fastapi import APIRouter, Request, Depends
-from nebula3.common.ttypes import Row, Value, NMap, NList
+from nebula3.common.ttypes import Row, Value, NMap, NList, Vertex
 
 user_router = APIRouter()
 
@@ -23,8 +22,8 @@ async def login(login_req: model.LoginRequest, req: Request) -> model.Response:
     logger.info("login %s, captcha %s", login_req, captcha)
     assert captcha == login_req.captcha.lower().encode(), "invalid_captcha"
     logger.info("valid capthca")
-    ngql = "LOOKUP ON caasm_user WHERE caasm_user.username == $username YIELD properties(VERTEX).passwd AS passwd"
-    result = app.nebula_sess_pool.execute_py(ngql, {"username": login_req.username})
+    stmt = "LOOKUP ON caasm_user WHERE caasm_user.username == $username YIELD properties(VERTEX).passwd AS passwd"
+    result = app.nebula_facade.execute(stmt, username=login_req.username)
     assert result.is_succeeded(), result.error_msg()
     passwds = result.column_values("passwd")
     assert len(passwds) > 0, "invalid_username_or_password"
@@ -49,33 +48,33 @@ async def logout(logout: dict = Depends(LOGOUT)) -> model.Response:
 async def get_profile(req: Request, user: dict = Depends(LOGIN)):
     app: App = req.app
     logger.info("user %s", user)
-    ngql = "LOOKUP ON caasm_user WHERE caasm_user.username == $username YIELD id(VERTEX) AS id, properties(VERTEX) AS props"
-    result = app.nebula_sess_pool.execute_py(ngql, {"username": user.get("username")})
+    stmt = (
+        "LOOKUP ON caasm_user WHERE caasm_user.username == $username YIELD VERTEX AS v"
+    )
+    result = app.nebula_facade.execute(stmt, username=user.get("username"))
+    logger.info("result %s", result)
     rows: Optional[List[Row]] = result.rows()
     assert rows, "no_this_user"
     row = rows[0]
+    logger.info("row %s", row)
     values: Optional[List[Value]] = row.values
     assert values, "no_this_user"
-    props: Optional[NMap] = values[1].value
-    assert props, "no_this_user"
-    props_dict: Dict[bytes, Value] = props.kvs
-    assert isinstance(values[0].value, bytes), "model_mismatch"
-    return model.Response(
-        data=make_object(model.User, props_dict, values[0].value.decode())
-    )
+    vertex: Optional[Vertex] = values[0].value
+    assert isinstance(vertex, Vertex), "no_this_user"
+    return model.Response(data=make_object(model.User, vertex))
 
 
 @user_router.get(path="/user/menus", response_model=model.Response)
 async def get_permission(req: Request, user: dict = Depends(LOGIN)):
     app: App = req.app
     logger.info("user %s", user)
-    ngql = """LOOKUP ON caasm_perm_group WHERE caasm_perm_group.perm_group_name == 'menu' YIELD id(vertex) AS i \
+    stmt = """LOOKUP ON caasm_perm_group WHERE caasm_perm_group.perm_group_name == 'menu' YIELD id(vertex) AS i \
         | GO FROM $-.i OVER perm_e_group REVERSELY YIELD src(edge) AS i \
         | GO 1 TO 4 STEPS FROM $-.i OVER perm_include, perm_e_role YIELD dst(edge) AS i, src(edge) AS j \
         | GO FROM $-.i OVER user_e_role REVERSELY WHERE $$.caasm_user.username == $username YIELD $-.j AS i \
-        | GO 1 TO 4 STEPS FROM $-.i OVER perm_include YIELD properties($^) AS s, properties($$) AS t \
+        | GO 1 TO 4 STEPS FROM $-.i OVER perm_include YIELD $^ AS s, $$ AS t \
         | GROUP BY $-.s YIELD $-.s AS menu, collect($-.t) AS submenus"""
-    result = app.nebula_sess_pool.execute_py(ngql, {"username": user.get("username")})
+    result = app.nebula_facade.execute(stmt, username=user.get("username"))
     menus_map: Dict[str, model.Perm] = {}
     data: dict[str, model.Perm] = {}
     for row in result.rows():
@@ -83,16 +82,16 @@ async def get_permission(req: Request, user: dict = Depends(LOGIN)):
         menu_value = row.values[0]
         submenus_value = row.values[1]
         assert isinstance(menu_value, Value), "no_menus"
-        assert isinstance(menu_value.value, NMap), "no_menus"
-        menu = make_object(model.Perm, menu_value.value.kvs)
+        assert isinstance(menu_value.value, Vertex), "no_menus"
+        menu = make_object(model.Perm, menu_value.value)
         menus_map[menu.perm_name] = menu
         assert isinstance(submenus_value, Value), "no_menus"
         logger.info("submenus_value %s", submenus_value.value)
         assert isinstance(submenus_value.value, NList), "no_menus"
         for sub_row in submenus_value.value.values:
             assert isinstance(sub_row, Value), "no_menus"
-            assert isinstance(sub_row.value, NMap), "no_menus"
-            submenu = make_object(model.Perm, sub_row.value.kvs)
+            assert isinstance(sub_row.value, Vertex), "no_menus"
+            submenu = make_object(model.Perm, sub_row.value)
             if submenu.perm_name in data.keys():
                 menu.submenus.append(data.pop(submenu.perm_name))
             else:
@@ -112,7 +111,7 @@ async def get_permission(req: Request, user: dict = Depends(LOGIN)):
 @user_router.get(path="/user/{user_id}", response_model=model.Response)
 async def get_user(
     user_id: Optional[str],
-    has_perms: bool = Depends(PermissionChecker(["get_anything"])),
+    has_perms: bool = Depends(PermissionChecker(["user_read_permission"])),
 ):
     logger.info("user_id %s", user_id)
     return model.Response(data=has_perms)

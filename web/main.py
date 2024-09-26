@@ -1,18 +1,22 @@
 #!/bin/env python
 import api
 
-from model import resp
-from common.app import App
-from common.log import logger
-from pydantic import RootModel
-from cryptography import fernet
-from redis import asyncio as aioredis
-from contextlib import asynccontextmanager
-from fastapi import Request, status
-from fastapi.responses import JSONResponse
+# import aiokafka
+
 from captcha.image import ImageCaptcha
-from nebula3.Config import SessionPoolConfig
-from nebula3.gclient.net.SessionPool import SessionPool
+from common.app import App
+from common.websocket import WebSocketManager
+from common.queue import NotifyQueue
+from common.file import FileManager
+from common.log import logger
+from common.nebula import NebulaFacade
+from contextlib import asynccontextmanager
+from cryptography import fernet
+from fastapi import status, Request
+from fastapi.responses import JSONResponse
+from model import resp
+from pydantic import RootModel
+from redis import asyncio as aioredis
 from settings import (
     CAASM_TOKEN_FERNET_KEY,
     CAASM_TOKEN_TTL,
@@ -22,6 +26,8 @@ from settings import (
     CAASM_NEBULA_SPACE_NAME,
     CAASM_NEBULA_HOST,
     CAASM_NEBULA_PORT,
+    CAASM_TASK_TOPIC_NAME,
+    CAASM_KAFKA_BOOTSTRAP_SERVERS,
 )
 
 
@@ -35,33 +41,45 @@ async def lifespan(app: App):
     app.image_captcha = ImageCaptcha(width=320, height=120, font_sizes=(62, 70, 76))
     logger.info("Initialize asyncio redis ...")
     app.redis = aioredis.from_url(CAASM_REDIS_URL)
-    logger.info("Initialize Nebula session pool ...")
-    app.nebula_sess_pool = SessionPool(
+    logger.info("Initialize Nebula facade ...")
+    app.nebula_facade = NebulaFacade(
         CAASM_NEBULA_USERNAME,
         CAASM_NEBULA_PASSWORD,
         CAASM_NEBULA_SPACE_NAME,
         [(CAASM_NEBULA_HOST, CAASM_NEBULA_PORT)],
     )
-    app.nebula_sess_pool.init(SessionPoolConfig())
+    logger.info("Initialize notify queue ...")
+    app.notify_queue = NotifyQueue(CAASM_TASK_TOPIC_NAME, CAASM_KAFKA_BOOTSTRAP_SERVERS)
+    await app.notify_queue.start()
+    logger.info("Initialize file manager ...")
+    app.file_manager = FileManager()
+    logger.info("Initialize websocket manager ...")
+    app.websocket_manager = WebSocketManager(app.redis, app.notify_queue)
     yield
+    logger.info("Closing websocket manager ...")
+    await app.websocket_manager.close()
+    logger.info("Closing file manager ...")
+    await app.file_manager.close()
+    logger.info("Closing notify queue ...")
+    await app.notify_queue.close()
+    logger.info("Closing Nebula facade ...")
+    app.nebula_facade.close()
     logger.info("Closing asyncio redis ...")
     await app.redis.close()
-    logger.info("Closing Nebula session pool ...")
-    app.nebula_sess_pool.close()
 
 
 app = App(lifespan=lifespan)
 
 
 @app.exception_handler(Exception)
-async def bussiness_exception_handler(req: Request, exception: Exception):
+async def global_exception_handler(_: Request, exception: Exception):
     if isinstance(exception, fernet.InvalidToken):
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content=RootModel[resp.Response](
                 resp.Response(
                     code=status.HTTP_401_UNAUTHORIZED,
-                    msg="{}: {}".format(exception.__class__.__name__, exception),
+                    msg="invalid_token",
                 )
             ).model_dump(),
         )

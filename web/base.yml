@@ -1,0 +1,11 @@
+services:
+  web:
+    image: ${COMPOSE_PROJECT_NAME}/web:${VERSION:-0.1.0}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}-web
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      CAASM_LOGGER_FORMATTER: ${LOGGER_FORMATTER:-%(asctime)s %(levelprefix)s %(message)s}
+      CAASM_ACCESS_LOGGER_FORMATTER: ${ACCESS_LOGGER_FORMATTER:-%(asctime)s %(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s}

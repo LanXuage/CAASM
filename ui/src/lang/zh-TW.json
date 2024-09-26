@@ -39,5 +39,6 @@
     "query_scenario": "查詢場景",
     "real_time_query": "實時查詢",
     "export_record": "導出記錄",
-    "standing_book": "資產台賬"
+    "standing_book": "資產台賬",
+    "add_field": "添加字段"
 }

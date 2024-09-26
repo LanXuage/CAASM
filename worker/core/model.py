@@ -1,9 +1,8 @@
 #!/bin/env python3
 
 from datetime import datetime
-from typing import List
 from pydantic.dataclasses import dataclass
-from pydantic import ConfigDict, AliasGenerator, Field
+from pydantic import ConfigDict, AliasGenerator
 from pydantic.alias_generators import to_camel, to_snake
 
 
@@ -16,10 +15,11 @@ from pydantic.alias_generators import to_camel, to_snake
         from_attributes=True,
     )
 )
-class Perm:
+class Task:
     id: str
-    perm_name: str
-    perm_desc: str
-    updated_at: datetime
-    created_at: datetime
-    submenus: List["Perm"] = Field(default_factory=lambda: [])
+    task_type: int
+    task_status: int
+    started_at: datetime = datetime.fromtimestamp(0)
+    ended_at: datetime = datetime.fromtimestamp(0)
+    updated_at: datetime = datetime.now()
+    created_at: datetime = datetime.now()

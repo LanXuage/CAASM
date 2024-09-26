@@ -160,3 +160,15 @@ CREATE TAG IF NOT EXISTS map_value( \
     updated_at TIMESTAMP NOT NULL DEFAULT now(), \
     created_at TIMESTAMP NOT NULL DEFAULT now() \
 );
+
+CREATE TAG INDEX IF NOT EXISTS caasm_graph_index on \
+    caasm_graph(graph_name(256), graph_desc(256));
+
+CREATE TAG INDEX IF NOT EXISTS model_index on \
+    model(model_name(256), model_desc(256));
+
+CREATE TAG INDEX IF NOT EXISTS field_index on \
+    field(field_name(256), field_desc(256));
+
+CREATE TAG INDEX IF NOT EXISTS field_collect_index on \
+    field_collect(collect_name(256), collect_desc(256));

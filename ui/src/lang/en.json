@@ -39,5 +39,7 @@
     "query_scenario": "Query Scenario",
     "real_time_query": "Real-Time Query",
     "export_record": "Export Record",
-    "standing_book": "Standing Book"
+    "standing_book": "Standing Book",
+    "add_field": "Add Field",
+    "file_upload_permission": "File Upload Permission"
 }

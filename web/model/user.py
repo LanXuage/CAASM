@@ -18,7 +18,6 @@ from pydantic.alias_generators import to_camel, to_snake
 class User:
     id: str
     username: str
-    passwd: str
     real_name: str
     phone: str
     email: str

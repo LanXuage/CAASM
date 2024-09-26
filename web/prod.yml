@@ -1,0 +1,8 @@
+services:
+  web:
+    extends:
+      file: ./base.yml
+      service: web
+    container_name: ${COMPOSE_PROJECT_NAME}-web
+    profiles:
+      - prod

@@ -75,6 +75,18 @@ class HttpRequest {
         );
     }
 
+    getUrl(path: string): string {
+        return this.service.getUri({ url: path })
+    }
+
+    getHeaders(): Object {
+        const userStore = useUserStore()
+        if (import.meta.env.VITE_APP_TOKEN_KEY && userStore.token !== '') {
+            return { [import.meta.env.VITE_APP_TOKEN_KEY]: userStore.token }
+        }
+        return {}
+    }
+
     request<T = any>(config: AxiosRequestConfig): Promise<T> {
         return new Promise((resolve, reject) => {
             try {

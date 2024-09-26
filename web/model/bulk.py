@@ -1,9 +1,8 @@
 #!/bin/env python3
 
-from datetime import datetime
-from typing import List
+from typing import List, Any
 from pydantic.dataclasses import dataclass
-from pydantic import ConfigDict, AliasGenerator, Field
+from pydantic import ConfigDict, AliasGenerator
 from pydantic.alias_generators import to_camel, to_snake
 
 
@@ -16,10 +15,6 @@ from pydantic.alias_generators import to_camel, to_snake
         from_attributes=True,
     )
 )
-class Perm:
-    id: str
-    perm_name: str
-    perm_desc: str
-    updated_at: datetime
-    created_at: datetime
-    submenus: List["Perm"] = Field(default_factory=lambda: [])
+class Bulk:
+    method: str
+    data: List[Any]

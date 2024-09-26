@@ -56,6 +56,17 @@ class PermissionChecker:
         self.permissions = permissions
         self.throw_except = throw_except
 
-    async def __call__(self, req: Request, user_id: str = Depends(LOGIN)) -> bool:
+    async def __call__(self, req: Request, user: dict = Depends(LOGIN)) -> bool:
+        app: App = req.app
+        stmt = """UNWIND $perms AS perm_name MINUS (LOOKUP ON caasm_user WHERE caasm_user.username == $username YIELD id(VERTEX) AS id \
+            | GO FROM $-.id OVER user_e_role YIELD dst(EDGE) AS id \
+            | GO FROM $-.id OVER perm_e_role REVERSELY YIELD $$.caasm_perm.perm_name AS perm_name)"""
         logger.info("has perm %s", self.permissions)
-        return False
+        result = app.nebula_facade.execute(
+            stmt, username=user.get("username"), perms=self.permissions
+        )
+        f = result.is_succeeded() and result.row_size() == 0
+        if self.throw_except:
+            assert f, "no_perm"
+        logger.info("result %s", result.row_size())
+        return f

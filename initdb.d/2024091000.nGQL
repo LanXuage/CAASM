@@ -1,0 +1,21 @@
+USE caasm;
+
+INSERT VERTEX IF NOT EXISTS field_collect(collect_name, collect_desc) VALUES \
+    "4312d71531318c8af85ad64de6d657b3":("base", "base_desc");
+
+INSERT VERTEX IF NOT EXISTS caasm_perm(perm_name, perm_desc, updated_at, created_at) VALUES \
+    "ad3c317c364142b2f3b0afc1819fc5bb":("field_collect_create_permission", "field_collect_create_permission_desc", timestamp("2024-09-10 12:00:02.000"), timestamp("2024-09-10 12:00:02.000")), \
+    "6f463dbc155825c287b081b532bc1e85":("field_collect_modify_permission", "field_collect_modify_permission_desc", timestamp("2024-09-10 12:00:02.000"), timestamp("2024-09-10 12:00:02.000")), \
+    "f999d91db53dce65583ba6223f8cdeb0":("field_collect_read_permission", "field_collect_read_permission_desc", timestamp("2024-09-10 12:00:02.000"), timestamp("2024-09-10 12:00:02.000")), \
+    "7d92a14d6eddcea4008a824959c587f9":("field_create_permission", "field_create_permission_desc", timestamp("2024-09-10 12:00:02.000"), timestamp("2024-09-10 12:00:02.000")), \
+    "4eb90149d1be84f732d0bb26af3d6c07":("field_modify_permission", "field_modify_permission_desc", timestamp("2024-09-10 12:00:02.000"), timestamp("2024-09-10 12:00:02.000")), \
+    "4eb90149d1be84f732d0bb26af3d6c07":("field_read_permission", "field_read_permission_desc", timestamp("2024-09-10 12:00:02.000"), timestamp("2024-09-10 12:00:02.000")), \
+    "118b8bf5c7f3e3c8affd100840d31464":("file_upload_permission", "file_upload_permission_desc", timestamp("2024-09-10 12:00:02.000"), timestamp("2024-09-10 12:00:02.000"));
+
+INSERT EDGE IF NOT EXISTS perm_e_role() VALUES \
+    "ad3c317c364142b2f3b0afc1819fc5bb"->"4d99f3db591a170da8510eee208c66e3":(), \
+    "6f463dbc155825c287b081b532bc1e85"->"4d99f3db591a170da8510eee208c66e3":(), \
+    "f999d91db53dce65583ba6223f8cdeb0"->"4d99f3db591a170da8510eee208c66e3":(), \
+    "7d92a14d6eddcea4008a824959c587f9"->"4d99f3db591a170da8510eee208c66e3":(), \
+    "4eb90149d1be84f732d0bb26af3d6c07"->"4d99f3db591a170da8510eee208c66e3":(), \
+    "118b8bf5c7f3e3c8affd100840d31464"->"4d99f3db591a170da8510eee208c66e3":();

@@ -138,3 +138,34 @@ services:
       - 6379:6379
     profiles:
       - dev
+    
+  web-dev:
+    extends:
+      file: web/dev.yml
+      service: web-dev
+    depends_on:
+      queue-dev:
+        condition: service_healthy
+      redis-dev:
+        condition: service_healthy
+      graphd-dev:
+        condition: service_healthy
+    networks:
+      caasm:
+        aliases:
+          - web
+
+  queue-dev:
+    extends:
+      file: base.yml
+      service: queue
+    container_name: ${COMPOSE_PROJECT_NAME}-queue-dev
+    ports:
+      - 9092:9092
+      - 9093:9093
+    networks:
+      caasm:
+        aliases:
+          - queue
+    profiles:
+      - dev

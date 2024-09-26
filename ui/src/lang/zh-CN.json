@@ -39,5 +39,6 @@
     "query_scenario": "查询场景",
     "real_time_query": "实时查询",
     "export_record": "导出记录",
-    "standing_book": "资产台账"
+    "standing_book": "资产台账",
+    "add_field": "添加字段"
 }

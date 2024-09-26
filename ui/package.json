@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
+    "@vueuse/core": "^11.0.3",
     "axios": "^1.7.5",
     "crypto-js": "^4.2.0",
     "element-plus": "^2.8.1",
