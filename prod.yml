@@ -124,3 +124,19 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}-web
     profiles:
       - prod
+
+  queue:
+    extends:
+      file: base.yml
+      service: queue
+    container_name: ${COMPOSE_PROJECT_NAME}-queue
+    profiles:
+      - prod
+
+  worker:
+    extends:
+      file: worker/prod.yml
+      service: worker
+    container_name: ${COMPOSE_PROJECT_NAME}-worker
+    profiles:
+      - prod

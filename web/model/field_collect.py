@@ -1,7 +1,7 @@
 #!/bin/env python3
 
+from common.datetime import ZONE_INFO
 from datetime import datetime
-from typing import List
 from pydantic.dataclasses import dataclass
 from pydantic import ConfigDict, AliasGenerator
 from pydantic.alias_generators import to_camel, to_snake
@@ -20,5 +20,5 @@ class FieldCollect:
     id: str
     collect_name: str
     collect_desc: str
-    updated_at: datetime
-    created_at: datetime
+    updated_at: datetime = datetime.now(tz=ZONE_INFO)
+    created_at: datetime = datetime.now(tz=ZONE_INFO)

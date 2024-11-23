@@ -5,12 +5,14 @@ import msgpack
 import hashlib
 
 from common.app import App
+from datetime import datetime
 from common.log import logger
+from common.datetime import ZONE_INFO
 from common.nebula import make_object
 from typing import Optional, List, Dict
 from deps.permission import PermissionChecker, LOGIN, LOGOUT
 from fastapi import APIRouter, Request, Depends
-from nebula3.common.ttypes import Row, Value, NMap, NList, Vertex
+from nebula3.common.ttypes import Row, Value, NList, Vertex
 
 user_router = APIRouter()
 
@@ -35,8 +37,13 @@ async def login(login_req: model.LoginRequest, req: Request) -> model.Response:
     )
     assert password == login_req.password, "invalid_username_or_password"
     logger.info("valid passwd")
-    token = app.token_fernet.encrypt_at_time(data=msgpack.packb({"username": login_req.username}), current_time=int(time.time())).decode()  # type: ignore
-    return model.Response(data=token)
+    ctime = int(time.time())
+    token = app.token_fernet.encrypt_at_time(data=msgpack.packb({"username": login_req.username}), current_time=ctime).decode()  # type: ignore
+    return model.Response(
+        data=model.Token(
+            token, datetime.fromtimestamp(ctime + app.token_ttl, tz=ZONE_INFO)
+        )
+    )
 
 
 @user_router.get(path="/user/action/logout", response_model=model.Response)

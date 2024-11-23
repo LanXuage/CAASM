@@ -1,0 +1,12 @@
+USE caasm;
+
+CREATE EDGE IF NOT EXISTS web_notify( \
+    title STRING NOT NULL, \
+    msg STRING NOT NULL, \
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);
+
+CREATE EDGE IF NOT EXISTS progress_notify( \
+    progress INT64 NOT NULL
+    created_at TIMESTAMP NOT NULL DEFAULT now() \
+);

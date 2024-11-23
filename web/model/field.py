@@ -1,6 +1,7 @@
 #!/bin/env python3
 import pydantic
 
+from common.datetime import ZONE_INFO
 from datetime import datetime
 from typing import List, Optional
 from pydantic.dataclasses import dataclass
@@ -21,6 +22,6 @@ class Field:
     field_name: str
     field_desc: str
     id: Optional[str] = None
-    updated_at: datetime = datetime.now()
-    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now(tz=ZONE_INFO)
+    created_at: datetime = datetime.now(tz=ZONE_INFO)
     collects: List[str] = pydantic.Field(default_factory=lambda: [])

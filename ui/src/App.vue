@@ -1,25 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { ElConfigProvider } from 'element-plus'
-import { useUserStore } from './store/user'
-import zhCN from 'element-plus/es/locale/lang/zh-cn'
-import zhTW from 'element-plus/es/locale/lang/zh-tw'
-import en from 'element-plus/es/locale/lang/en'
+import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
-
-const langs = new Map([
-  ['zh-cn', zhCN],
-  ['zh-tw', zhTW],
-  ['en', en],
-  ['default', zhCN],
-])
-
-const lang = computed(() => langs.get(userStore.lang.toLocaleLowerCase()) || langs.get('default'))
 </script>
 
 <template>
-  <el-config-provider :locale="lang">
-    <router-view />
+  <el-config-provider :locale="userStore.locale">
+    <el-container style="height: 100vh;">
+      <el-header v-if="userStore.userState.useHeader">
+        <x-menu />
+      </el-header>
+      <el-aside v-else>
+        <x-menu />
+      </el-aside>
+      <el-main style="display: flex; flex-direction: column;">
+        <router-view />
+      </el-main>
+    </el-container>
   </el-config-provider>
 </template>

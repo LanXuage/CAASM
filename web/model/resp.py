@@ -18,5 +18,4 @@ from pydantic.alias_generators import to_camel, to_snake
 )
 class Response:
     code: int = status.HTTP_200_OK
-    msg: str = 'OK'
     data: Any = None

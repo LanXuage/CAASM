@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}-web
+    hostname: web
     environment:
       TZ: ${TZ:-Asia/Shanghai}
       CAASM_LOGGER_FORMATTER: ${LOGGER_FORMATTER:-%(asctime)s %(levelprefix)s %(message)s}

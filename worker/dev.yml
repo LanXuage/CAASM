@@ -1,0 +1,10 @@
+services:
+  worker-dev:
+    extends:
+      file: ./base.yml
+      service: worker
+    container_name: ${COMPOSE_PROJECT_NAME}-worker-dev
+    volumes:
+      - .:/usr/src/app
+    profiles:
+      - dev

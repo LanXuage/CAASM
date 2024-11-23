@@ -5,6 +5,7 @@ from threading import Lock
 from .queue import NotifyQueue
 from fastapi import WebSocket
 from typing import Dict, Any, Optional
+from common.log import logger
 
 
 class WebSocketManager:
@@ -15,14 +16,17 @@ class WebSocketManager:
         self.websockets: Dict[str, WebSocket] = {}
         self.notify_queue = notify_queue
 
-    async def add_websocket(self, key: Any, web_socket: WebSocket):
-        self.websockets[key] = web_socket
+    async def add_websocket(self, key: Any, websocket: WebSocket):
+        await websocket.accept()
+        self.websockets[key] = websocket
         if self.notify_consumer is None or self.notify_consumer.done():
             with WebSocketManager.lock:
                 if self.notify_consumer is None or self.notify_consumer.done():
+                    logger.info('aaaa')
                     self.notify_consumer = asyncio.get_running_loop().create_task(
                         self.notify_consumer_loop()
                     )
+                    logger.info('bbbb')
 
     async def process_event(self, event: dict, username: Any):
         t = event.get("type")
@@ -31,7 +35,7 @@ class WebSocketManager:
 
     async def notify_consumer_loop(self):
         while True:
-            pass
+            await asyncio.sleep(1)
 
     async def close_websocket(self, username: Any):
         websocket = self.websockets.get(username)

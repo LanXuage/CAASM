@@ -1,12 +1,13 @@
 #!/bin/env python
 import msgpack
 
+from abc import ABC, abstractmethod
 from aiokafka import AIOKafkaConsumer
-from .model import Task
+from .task import Task, TaskType, BulkTask
 from typing import Any
 
 
-class AbstractQueue:
+class AbstractQueue(ABC):
     def __init__(self, topic_name: str, bootstrap_servers: str) -> None:
         self.consumer = AIOKafkaConsumer(
             topic_name, bootstrap_servers=bootstrap_servers
@@ -16,9 +17,11 @@ class AbstractQueue:
     async def start(self):
         await self.consumer.start()
 
+    @abstractmethod
     async def put(self, msg: Any):
         raise NotImplementedError
 
+    @abstractmethod
     async def get(self) -> Any:
         raise NotImplementedError
 
@@ -32,4 +35,8 @@ class TaskQueue(AbstractQueue):
 
     async def get(self) -> Task:
         msg = await anext(self.consumer)
-        return msgpack.unpackb(msg.value)
+        task = msgpack.unpackb(msg.value, timestamp=3)
+        if task.get("task_type") == TaskType.BULK.value:
+            return BulkTask(**task)
+        else:
+            raise Exception("Unspport task type")

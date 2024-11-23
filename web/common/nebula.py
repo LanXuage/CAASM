@@ -1,6 +1,8 @@
 #!/bin/env python
 import hashlib
 
+from common.datetime import ZONE_INFO
+from enum import Enum
 from common.log import logger
 from datetime import datetime
 from nebula3.common.ttypes import Vertex, Tag, Row, Value
@@ -16,6 +18,14 @@ def gen_vid(tag: str, *argv: str) -> str:
     return hashlib.md5("_".join((tag,) + argv).encode()).hexdigest()
 
 
+def expand_enum(data: Dict[str, Any]) -> Dict[str, Any]:
+    for k in data.keys():
+        v = data[k]
+        if isinstance(v, Enum):
+            data[k] = v.value
+    return data
+
+
 def make_object(model: Type[T], vertex: Vertex, **kwargv: Any) -> T:
     annotations = model.__annotations__
     logger.info("annotations %s", annotations)
@@ -28,15 +38,15 @@ def make_object(model: Type[T], vertex: Vertex, **kwargv: Any) -> T:
         logger.info("attr_key %s", attr_key)
         if attr_key in annotations.keys():
             t = annotations.get(attr_key)
-            if t == int or t == Optional[int]:
-                assert isinstance(v.value, int), "model_mismatch"
+            assert isinstance(v, Value), "model_mismatch"
+            if (t == int or t == Optional[int]) and isinstance(v.value, int):
                 params[attr_key] = v.value
-            elif t == str or t == Optional[str]:
-                assert isinstance(v.value, bytes), "model_mismatch"
+            elif (t == str or t == Optional[str]) and isinstance(v.value, bytes):
                 params[attr_key] = v.value.decode()
-            elif t == datetime or t == Optional[datetime]:
-                assert isinstance(v.value, int), "model_mismatch"
-                params[attr_key] = datetime.fromtimestamp(v.value)
+            elif (t == datetime or t == Optional[datetime]) and isinstance(
+                v.value, int
+            ):
+                params[attr_key] = datetime.fromtimestamp(v.value, tz=ZONE_INFO)
             else:
                 logger.warning("type not match %s - %s", attr_key, t)
     for k, v in kwargv.items():
@@ -79,7 +89,7 @@ class NebulaFacade:
         return vertex if isinstance(vertex, Vertex) else None
 
     def execute(self, stmt: str, **kwargv: Any) -> ResultSet:
-        return self.nebula_session_pool.execute_py(stmt, kwargv)
+        return self.nebula_session_pool.execute_py(stmt, expand_enum(kwargv))
 
     def insert(self, tag: str, obj: Any) -> bool:
         return True

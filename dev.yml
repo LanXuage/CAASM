@@ -155,6 +155,20 @@ services:
         aliases:
           - web
 
+  worker-dev:
+    extends:
+      file: worker/dev.yml
+      service: worker-dev
+    depends_on:
+      queue-dev:
+        condition: service_healthy
+      graphd-dev:
+        condition: service_healthy
+    networks:
+      caasm:
+        aliases:
+          - worker
+
   queue-dev:
     extends:
       file: base.yml
@@ -163,9 +177,5 @@ services:
     ports:
       - 9092:9092
       - 9093:9093
-    networks:
-      caasm:
-        aliases:
-          - queue
     profiles:
       - dev

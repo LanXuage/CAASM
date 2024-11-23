@@ -1,49 +1,39 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-import LayoutView from '../views/layout/index.vue'
-import LoginSubView from '../views/subviews/login/index.vue'
-import { useUserStore } from '../store/user'
-import { ROUTES_MAP } from './constant'
-
-const layoutChildren = [
-    {
-        path: '/login',
-        name: 'login',
-        component: LoginSubView,
-    }
-]
-
-for (const [_, value] of ROUTES_MAP) {
-    layoutChildren.push(value)
-}
-
-const routes = [
-    {
-        path: '/',
-        name: 'layout',
-        component: LayoutView,
-        redirect: '/overview',
-        children: layoutChildren
-    },
-]
-
-
+import { useUserStore } from '@/stores/user'
+import { isNil } from 'lodash'
+import LoginView from '@/views/LoginView.vue'
 
 const router = createRouter({
-    history: createWebHashHistory(),
-    routes,
+  history: createWebHashHistory(),
+  routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+    },
+    {
+      path: '/50x',
+      name: '50x',
+      component: LoginView,
+    },
+    {
+      path: '/404',
+      name: '404',
+      component: LoginView,
+    },
+  ],
 })
 
-
-router.beforeEach((to, from) => {
-    console.log(to, from)
-    const userStore = useUserStore()
-    console.log('user', userStore.user)
-    if (to.path !== '/login' && userStore.token === '') {
-        return '/login'
-    } else if (to.path === '/login' && userStore.token !== '') {
-        return from
-    }
+router.beforeEach(async (to, from) => {
+  console.log(to, from)
+  const userStore = useUserStore()
+  if (isNil(userStore.token) && to.path !== '/login') return '/login'
+  if (!isNil(userStore.token) && to.path === '/login') return from
+  if (isNil(to.name)) {
+    if (await userStore.hasRoute(to.path)) return to
+    if (to.path !== '/') return '/404'
+  }
 })
 
 export default router
