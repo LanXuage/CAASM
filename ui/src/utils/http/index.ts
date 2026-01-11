@@ -25,6 +25,7 @@ http.interceptors.request.use(
 
 http.interceptors.response.use(
   response => {
+    console.log('###########', response)
     const data: APIResponse<string> = response.data
     switch (data.code) {
       case APIStatusCode.Unauthorized:
@@ -39,6 +40,7 @@ http.interceptors.response.use(
     }
   },
   (error: AxiosError) => {
+    console.log('###########', error)
     if (isNil(error.status)) {
       ElNofify.error(`${i18n.global.t('err_network')}: ${error.message}`)
     } else {
@@ -48,16 +50,22 @@ http.interceptors.response.use(
           userStore.logoutAndGotoLogin()
           break
         default:
+          ElNofify.error(i18n.global.t('req_failed'))
           break
       }
     }
+    return Promise.reject(error)
   },
 )
 
 export default class HTTP {
   static getHeaders = () => {
     const userStore = useUserStore()
-    if (import.meta.env.VITE_APP_TOKEN_KEY && userStore.token !== '') {
+    if (
+      import.meta.env.VITE_APP_TOKEN_KEY &&
+      !isNil(userStore.token) &&
+      userStore.token !== ''
+    ) {
       return { [import.meta.env.VITE_APP_TOKEN_KEY]: userStore.token }
     }
     return {}

@@ -5,11 +5,11 @@ import type { ILoginParam } from '@/apis/user/types'
 import { useI18n } from 'vue-i18n'
 import { APIUser } from '@/apis'
 import { cloneDeep, isNil } from 'lodash'
-import CryptoJs from 'crypto-js'
 import { useUserStore } from '@/stores/user'
 import http from '@/utils/http'
 import { APIURL } from '@/apis/common/types'
 import { ElNofify } from '@/utils/el-notify'
+import CryptoJS from 'crypto-js'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -51,7 +51,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     if (valid) {
       console.log('submit!')
       const loginParam: ILoginParam = cloneDeep(loginForm)
-      loginParam.password = CryptoJs.SHA256(`${loginForm.s}_${loginForm.captcha}_${loginForm.username}_${loginForm.password}`).toString()
+      loginParam.password = CryptoJS.SHA256(`${loginForm.s}_${loginForm.captcha}_${loginForm.username}_${loginForm.password}`).toString()
       APIUser.login(loginParam).then(token => {
         ElNofify.success(t('login_success'))
         userStore.setToken(token)

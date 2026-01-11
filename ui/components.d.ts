@@ -7,7 +7,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    Components: typeof import('./src/components/index.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAutoResizer: typeof import('element-plus/es')['ElAutoResizer']
     ElBreadcrumb: typeof import('element-plus/es')['ElBreadcrumb']
@@ -37,7 +36,6 @@ declare module 'vue' {
     ElTableV2: typeof import('element-plus/es')['ElTableV2']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     FieldDialog: typeof import('./src/components/FieldDialog.vue')['default']
-    FieldDialogj: typeof import('./src/components/FieldDialogj.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     XHeader: typeof import('./src/components/XHeader.vue')['default']

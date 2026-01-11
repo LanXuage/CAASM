@@ -37,6 +37,8 @@ export const useUserStore = defineStore(
     })
 
     const token = computed(() => {
+      console.log(userState.token, typeof userState.token?.expiryTime)
+
       if (
         isNil(userState.token) ||
         isNil(userState.token.value) ||
@@ -78,7 +80,8 @@ export const useUserStore = defineStore(
     }
 
     const hasRoute = async (path: string) => {
-      if (isNil(userState.token)) return
+      console.log(token, userState)
+      if (isNil(token) || isNil(userState.token)) return
       tryCloseNotifyQueue()
       try {
         userState.notifyQueue = new NotifyQueue(
@@ -86,7 +89,8 @@ export const useUserStore = defineStore(
           userState.token.value,
         )
         userState.user = await APIUser.getProfile()
-        userState.menus = await APIUser.getMyMenuPerms()
+        if (isNil(userState.menus))
+          userState.menus = await APIUser.getMyMenuPerms()
         router.addRoute(ROUTES.overview)
         return (
           checkAndAddRoutes(path, userState.menus) ||

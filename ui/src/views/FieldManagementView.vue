@@ -7,7 +7,7 @@ import type { SortBy, SortState } from 'element-plus'
 import { Edit, Delete, CirclePlus, Download, Upload, UploadFilled, Loading } from '@element-plus/icons-vue'
 import { APIURL, type IBulkForm } from '@/apis/common/types'
 import { APIField } from '@/apis'
-import { useResizeObserver } from '@vueuse/core'
+// import { useResizeObserver } from '@vueuse/core'
 import HTTP from '@/utils/http'
 import { useUserStore } from '@/stores/user'
 import { type INotify, NotifyType } from '@/utils/notify/types'
@@ -24,12 +24,12 @@ const editFieldDialogVisible = ref(false)
 const importBulkFieldsDialogVisible = ref(false)
 const isIndeterminate = ref(false)
 const allSelected = ref<CheckboxValueType>(false)
-const editFieldForm = reactive<IField>({ fieldName: '', fieldDesc: '', collects: [] });
+const editFieldForm = ref<IField>({ fieldName: '', fieldDesc: '', collects: [] });
 
 
 const editField = (rowData: IField) => {
   console.log('editField', rowData)
-  Object.assign(editFieldForm, rowData)
+  editFieldForm.value = rowData
   editFieldDialogVisible.value = true
 }
 const deleteField = (vid: string) => {
@@ -121,7 +121,7 @@ const columns = reactive<Array<Column>>([
     align: 'center',
   },
 ])
-const sortState = reactive<SortState>({
+const sortState = ref<SortState>({
   // 'fieldName': TableV2SortOrder.DESC,
   // 'fieldDesc': TableV2SortOrder.ASC,
   // 'updatedAt': TableV2SortOrder.ASC,
@@ -137,7 +137,7 @@ const buikFieldsRules = reactive<FormRules<IBulkForm>>({
 })
 
 const onSort = ({ key, order }: SortBy) => {
-  sortState[key] = order
+  sortState.value[key] = order
   console.log('sortState', sortState)
   data.splice(0, data.length, ...data.reverse())
 }
@@ -247,14 +247,14 @@ const submitBulkFields = () => {
 }
 
 refreshFields()
-useResizeObserver(xTableContainer, (entries) => {
-  const columnLength = entries[0].contentRect.width / (columns.length - 1) - 10
-  columns.forEach((e) => {
-    if (e.key !== 'selection') {
-      e.width = columnLength
-    }
-  })
-})
+// useResizeObserver(xTableContainer, (entries) => {
+//   const columnLength = entries[0].contentRect.width / (columns.length - 1) - 10
+//   columns.forEach((e) => {
+//     if (e.key !== 'selection') {
+//       e.width = columnLength
+//     }
+//   })
+// })
 </script>
 
 <template>
@@ -266,7 +266,7 @@ useResizeObserver(xTableContainer, (entries) => {
             }}</el-button>
           <el-button type="primary" @click="importBulkFieldsDialogVisible = true" :icon="Download">{{
             $t('bulk_import')
-            }}</el-button>
+          }}</el-button>
           <el-button type="primary" :icon="Upload">{{ $t('bulk_export') }}</el-button>
           <el-button type="danger" @click="deleteBulkFields" :icon="Delete">{{ $t('bulk_delete')
             }}</el-button>

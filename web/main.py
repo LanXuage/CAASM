@@ -108,7 +108,7 @@ async def global_exception_handler(_: Request, exception: Exception):
     )
 
 
-app.include_router(router=api.v1_router)
+app.include_router(router=api.router)
 
 if __name__ == "__main__":
     import uvicorn
