@@ -1,16 +1,12 @@
 #!/bin/env python3
+# Re-export BulkMethod from shared.models for backward compatibility.
+from shared.models.task import BulkMethod  # noqa: F401
 
 from enum import Enum
 from typing import List, Any
 from pydantic.dataclasses import dataclass
 from pydantic import ConfigDict, AliasGenerator
 from pydantic.alias_generators import to_camel, to_snake
-
-
-class BulkMethod(Enum):
-    DELETE = "DELETE"
-    POST = "POST"
-    PUT = "PUT"
 
 
 @dataclass(

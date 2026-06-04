@@ -1,0 +1,17 @@
+[project]
+name = "caasm"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = ["shared", "web", "worker"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "pytest-asyncio>=1.0",
+    "pytest-mock>=3.15",
+    "pytest-cov>=7.0",
+    "httpx>=0.28",
+    "testcontainers[redis,kafka]>=4.14",
+]

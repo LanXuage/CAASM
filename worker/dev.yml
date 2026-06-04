@@ -5,6 +5,8 @@ services:
       service: worker
     container_name: ${COMPOSE_PROJECT_NAME}-worker-dev
     volumes:
-      - .:/usr/src/app
+      - .:/app
+      - ../shared:/app/shared
+      - /app/.venv
     profiles:
       - dev

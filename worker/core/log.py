@@ -2,15 +2,10 @@
 import logging
 
 from settings import CAASM_LOGGER_FORMATTER
+from shared.log import get_logger
 
+logger = get_logger("worker.error", CAASM_LOGGER_FORMATTER)
 
-logger = logging.getLogger("worker.error")
-stream_handler = logging.StreamHandler()
-
-stream_handler.setFormatter(
-    logging.Formatter(
-        fmt=CAASM_LOGGER_FORMATTER.replace("%(levelprefix)s", "%(levelname)s:    ")
-    )
-)
-logger.setLevel(logging.INFO)
-logger.addHandler(stream_handler)
+# Also configure shared.nebula logger to use the same handler style
+logging.getLogger("shared.nebula").handlers = logger.handlers[:]
+logging.getLogger("shared.nebula").setLevel(logging.INFO)

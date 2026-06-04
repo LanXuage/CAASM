@@ -1,0 +1,22 @@
+[project]
+name = "web"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "shared",
+    "aiokafka==0.11.0",
+    "captcha==0.6.0",
+    "cryptography>=43.0",
+    "fastapi>=0.112",
+    "hiredis==3.0.0",
+    "msgpack>=1.1",
+    "pillow>=10.4",
+    "python-multipart>=0.0.10",
+    "pydantic>=2.9",
+    "redis>=5.0",
+    "uvicorn[standard]>=0.30",
+    "websockets>=13.0",
+]
+
+[tool.uv.sources]
+shared = { workspace = true }

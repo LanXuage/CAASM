@@ -5,7 +5,9 @@ services:
       service: web
     container_name: ${COMPOSE_PROJECT_NAME}-web-dev
     volumes:
-      - .:/usr/src/app
+      - .:/app
+      - ../shared:/app/shared
+      - /app/.venv
     profiles:
       - dev
     ports:

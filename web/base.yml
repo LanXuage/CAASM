@@ -2,10 +2,11 @@ services:
   web:
     image: ${COMPOSE_PROJECT_NAME}/web:${VERSION:-0.1.0}
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: web/Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}-web
     hostname: web
+    working_dir: /app
     environment:
       TZ: ${TZ:-Asia/Shanghai}
       CAASM_LOGGER_FORMATTER: ${LOGGER_FORMATTER:-%(asctime)s %(levelprefix)s %(message)s}

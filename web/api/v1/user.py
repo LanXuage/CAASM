@@ -8,13 +8,16 @@ from common.app import App
 from datetime import datetime
 from common.log import logger
 from common.datetime import ZONE_INFO
-from common.nebula import make_object
+from common.nebula import make_object, gen_vid
 from typing import Optional, List, Dict
 from deps.permission import PermissionChecker, LOGIN, LOGOUT
 from fastapi import APIRouter, Request, Depends
 from nebula3.common.ttypes import Row, Value, NList, Vertex
 
 user_router = APIRouter()
+USER_TAG = "caasm_user"
+
+# ==================== Auth endpoints ====================
 
 
 @user_router.post(path="/user/action/login", response_model=model.Response)
@@ -115,10 +118,188 @@ async def get_permission(req: Request, user: dict = Depends(LOGIN)):
     return model.Response(data=menus)
 
 
+# ==================== User management CRUD endpoints ====================
+
+
+@user_router.get(path="/users", response_model=model.Response)
+async def list_users(
+    req: Request,
+    _: bool = Depends(PermissionChecker(["user_read_permission"])),
+) -> model.Response:
+    """List all users."""
+    app: App = req.app
+    stmt = "LOOKUP ON {} YIELD VERTEX AS v".format(USER_TAG)
+    result = app.nebula_facade.execute(stmt)
+    users: List[model.User] = []
+    for row in result.rows():
+        assert isinstance(row, Row) and isinstance(row.values[0], Value), "server_err"
+        vertex = row.values[0].get_vVal()
+        if isinstance(vertex, Vertex):
+            users.append(make_object(model.User, vertex))
+    return model.Response(data=users)
+
+
+@user_router.post(path="/user", response_model=model.Response)
+async def create_user(
+    req: Request,
+    user_create: model.UserCreate,
+    _: bool = Depends(PermissionChecker(["user_create_permission"])),
+) -> model.Response:
+    """Create a new user."""
+    app: App = req.app
+    vid = gen_vid(USER_TAG, user_create.username)
+
+    # Check if user already exists
+    existing = app.nebula_facade.fetch(USER_TAG, vid)
+    assert existing is None, "user_exist"
+
+    # Hash the password with SHA256 (consistent with the login flow)
+    passwd_hash = hashlib.sha256(user_create.password.encode()).hexdigest()
+
+    stmt = (
+        'INSERT VERTEX IF NOT EXISTS {}(username, passwd, real_name, phone, email, user_status) '
+        'VALUES "{}":($username, $passwd, $real_name, $phone, $email, $user_status)'
+    ).format(USER_TAG, vid)
+    result = app.nebula_facade.execute(
+        stmt,
+        username=user_create.username,
+        passwd=passwd_hash,
+        real_name=user_create.real_name,
+        phone=user_create.phone,
+        email=user_create.email,
+        user_status=user_create.user_status,
+    )
+    assert result.is_succeeded(), "server_err"
+
+    # Fetch the created user
+    vertex = app.nebula_facade.fetch(USER_TAG, vid)
+    assert isinstance(vertex, Vertex), "server_err"
+    return model.Response(data=make_object(model.User, vertex))
+
+
 @user_router.get(path="/user/{user_id}", response_model=model.Response)
 async def get_user(
-    user_id: Optional[str],
-    has_perms: bool = Depends(PermissionChecker(["user_read_permission"])),
-):
-    logger.info("user_id %s", user_id)
-    return model.Response(data=has_perms)
+    req: Request,
+    user_id: str,
+    _: bool = Depends(PermissionChecker(["user_read_permission"])),
+) -> model.Response:
+    """Get user details with roles."""
+    app: App = req.app
+    logger.info("get user %s", user_id)
+
+    vertex = app.nebula_facade.fetch(USER_TAG, user_id)
+    assert isinstance(vertex, Vertex), "user_not_found"
+
+    # Get user's roles
+    roles: List[str] = []
+    stmt = (
+        'GO FROM "{}" OVER user_e_role '
+        "YIELD $$.caasm_role.role_name AS role_name"
+    ).format(user_id)
+    result = app.nebula_facade.execute(stmt)
+    if result.is_succeeded():
+        for row in result.rows():
+            if row.values and row.values[0]:
+                role_name = row.values[0].get_sVal()
+                if role_name:
+                    roles.append(role_name.decode() if isinstance(role_name, bytes) else role_name)
+
+    user_obj = make_object(model.UserDetail, vertex, roles=roles)
+    return model.Response(data=user_obj)
+
+
+@user_router.put(path="/user/{user_id}", response_model=model.Response)
+async def update_user(
+    req: Request,
+    user_id: str,
+    user_update: model.UserUpdate,
+    _: bool = Depends(PermissionChecker(["user_modify_permission"])),
+) -> model.Response:
+    """Update user information."""
+    app: App = req.app
+
+    # Build SET clause dynamically for non-None fields
+    set_parts = []
+    params = {}
+    if user_update.real_name is not None:
+        set_parts.append("real_name=$real_name")
+        params["real_name"] = user_update.real_name
+    if user_update.phone is not None:
+        set_parts.append("phone=$phone")
+        params["phone"] = user_update.phone
+    if user_update.email is not None:
+        set_parts.append("email=$email")
+        params["email"] = user_update.email
+    if user_update.user_status is not None:
+        set_parts.append("user_status=$user_status")
+        params["user_status"] = user_update.user_status
+
+    if not set_parts:
+        return model.Response(data="no_fields_to_update")
+
+    set_parts.append("updated_at=now()")
+    stmt = 'UPDATE VERTEX ON {} "{}" SET {}'.format(
+        USER_TAG, user_id, ", ".join(set_parts)
+    )
+    result = app.nebula_facade.execute(stmt, **params)
+    assert result.is_succeeded(), "server_err"
+
+    return model.Response(data="updated")
+
+
+@user_router.delete(path="/user/{user_id}", response_model=model.Response)
+async def delete_user(
+    req: Request,
+    user_id: str,
+    _: bool = Depends(PermissionChecker(["user_modify_permission"])),
+) -> model.Response:
+    """Delete a user and all associated edges."""
+    app: App = req.app
+    stmt = 'DELETE VERTEX "{}" WITH EDGE'.format(user_id)
+    result = app.nebula_facade.execute(stmt)
+    assert result.is_succeeded(), "server_err"
+    return model.Response(data="deleted")
+
+
+@user_router.post(path="/user/{user_id}/status", response_model=model.Response)
+async def change_user_status(
+    req: Request,
+    user_id: str,
+    status_change: model.UserStatusChange,
+    _: bool = Depends(PermissionChecker(["user_modify_permission"])),
+) -> model.Response:
+    """Enable or disable a user account."""
+    app: App = req.app
+    stmt = 'UPDATE VERTEX ON {} "{}" SET user_status=$user_status, updated_at=now()'.format(
+        USER_TAG, user_id
+    )
+    result = app.nebula_facade.execute(stmt, user_status=status_change.user_status)
+    assert result.is_succeeded(), "server_err"
+    return model.Response(data="status_updated")
+
+
+@user_router.post(path="/user/{user_id}/roles", response_model=model.Response)
+async def assign_user_roles(
+    req: Request,
+    user_id: str,
+    role_assign: model.UserAssignRoles,
+    _: bool = Depends(PermissionChecker(["user_modify_permission"])),
+) -> model.Response:
+    """Assign roles to a user. Replaces existing role assignments."""
+    app: App = req.app
+
+    # Delete existing role assignments
+    del_stmt = 'GO FROM "{}" OVER user_e_role YIELD src(edge) AS src, dst(edge) AS dst, rank(edge) AS rank | DELETE EDGE user_e_role $-.src -> $-.dst @ $-.rank'.format(
+        user_id
+    )
+    app.nebula_facade.execute(del_stmt)
+
+    # Insert new role assignments
+    if role_assign.role_ids:
+        insert_stmt = "INSERT EDGE IF NOT EXISTS user_e_role() VALUES "
+        for role_id in role_assign.role_ids:
+            insert_stmt += '"{}"->"{}":(),'.format(user_id, role_id)
+        result = app.nebula_facade.execute(insert_stmt[:-1])
+        assert result.is_succeeded(), "server_err"
+
+    return model.Response(data="roles_assigned")
